@@ -7,6 +7,8 @@
 /* virtual */ void spiningTop_Window::RunInit() /* override */
 {
 	GLFW_SetUpCallbacks();
+
+	m_app = std::make_unique<springTop_App>();
 }
 
 /* virtual */ void spiningTop_Window::RunRenderTick() /* override */
@@ -20,7 +22,7 @@
 
 /* virtual */ void spiningTop_Window::RunClear() /* override */
 {
-	
+	m_app.reset();
 }
 
 void spiningTop_Window::GLFW_SetUpCallbacks()
@@ -112,13 +114,89 @@ void spiningTop_Window::GUI_WindowLayout()
 
 void spiningTop_Window::GUI_WindowSettings()
 {
-	ImGui::Text("USTAWIENIA");
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+	
+	GUI_SEC_SimulationActions();
+	GUI_SEC_SimulationOptions();
+	GUI_SEC_DrawOptions();
+	ImGui::SeparatorText("Miscellaneous Information");
+	
+	ImGui::PopStyleVar(1);
+}
+
+void spiningTop_Window::GUI_SEC_DrawOptions()
+{
+	std::shared_ptr<drawParameters> drawParams = m_app->GetDrawParameters();
+
+	ImGui::SeparatorText("Draw Options");
+	GUI_ELEM_DrawCheckbox("Cube", drawParams->m_colorCube, drawParams->b_drawCube);
+	GUI_ELEM_DrawCheckbox("Cube's diagonal", drawParams->m_colorDiagonal, drawParams->b_drawDiagonal);
+	GUI_ELEM_DrawCheckbox("Gravitation", drawParams->m_colorGravitation, drawParams->b_drawGravitation);
+	GUI_ELEM_DrawCheckbox("Corner's trajectory", drawParams->m_colorTrajectory, drawParams->b_drawTrajectory);
+
+	float itemWidth = ImGui::GetWindowWidth() * 0.4f;
+	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::DragInt("Number of trajectorys' points", &drawParams->m_trajectoryPointsNum, 100, 100, 1000000, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (b_TrajectoryNumberActivation == true && ImGui::IsItemActive() == false)
+	{
+		// std::cout << "Aktualizacja" << std::endl;
+	}
+	b_TrajectoryNumberActivation = ImGui::IsItemActive();
+}
+
+void spiningTop_Window::GUI_SEC_SimulationOptions()
+{
+	std::shared_ptr<simulationParameters> simulationParams = m_app->GetSimulationParameters();
+	
+	ImGui::SeparatorText("Simulation Options");	
+	float itemWidth = ImGui::GetWindowWidth() * 0.6f;
+	
+	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::DragFloat("Cube's edge length", &simulationParams->m_cubeEdgeLength, 0.01f, 0.01f, FLT_MAX, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::DragFloat("Cube's density", &simulationParams->m_cubeDensity, 0.01f, 0.01f, FLT_MAX, "%.2f kg/m^3", ImGuiSliderFlags_AlwaysClamp);
+	
+	float currentTilt = glm::degrees(simulationParams->m_cubeTilt);
+	ImGui::SetNextItemWidth(itemWidth);
+	if (ImGui::DragFloat("Cube's tilt", &currentTilt, 0.2f, 0.0f, 90.0f, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
+	{
+		simulationParams->m_cubeTilt = glm::radians(currentTilt);
+	}
+
+	float currentVelocity = glm::degrees(simulationParams->m_cubeAngularVelocity);
+	ImGui::SetNextItemWidth(itemWidth);
+		if (ImGui::DragFloat("Cube's angular velocity", &currentVelocity, 0.5f, 0.0f, FLT_MAX, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
+	{
+		simulationParams->m_cubeAngularVelocity = glm::radians(currentVelocity);
+	}
+
+	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::DragFloat("simulation step", &simulationParams->m_delta, 0.001f, 0.01f, 0.1f, "%.4f");
+}
+
+void spiningTop_Window::GUI_SEC_SimulationActions()
+{
+	ImGui::SeparatorText("Actions");
+
+
 }
 
 void spiningTop_Window::GUI_WindowRender()
 {
 	ImGui::Text("RENDEROWANIE");
 }
+
+void spiningTop_Window::GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color, bool& draw)
+{	
+	ImGui::ColorEdit4(("##" + name).data(), reinterpret_cast<float*>(&color), 
+		ImGuiColorEditFlags_AlphaBar | 
+		ImGuiColorEditFlags_NoInputs | 
+		ImGuiColorEditFlags_NoBorder);
+	
+	ImGui::SameLine();
+	ImGui::Checkbox(name.data(), &draw);
+}
+
 
 void spiningTop_Window::GUI_UpdateDockingLayout()
 {

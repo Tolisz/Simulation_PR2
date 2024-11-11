@@ -1,8 +1,12 @@
 #pragma once
 
 #include "glfwWindowWrap.hpp"
+#include "springTop_App.hpp"
+
 #include <imgui.h>
+#include <string>
 #include <string_view>
+#include <memory>
 
 class spiningTop_Window: public glfwWindowWrap
 {
@@ -21,10 +25,18 @@ private:
     void GUI_Start();
     void GUI_Main();
     void GUI_WindowLayout();
+    
     // Respective function for windows;
     void GUI_WindowSettings();
+    void GUI_SEC_DrawOptions();
+    void GUI_SEC_SimulationOptions();
+    void GUI_SEC_SimulationActions();
     void GUI_WindowRender();
 
+    // UI Elements
+    void GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color, bool& draw);
+
+    // Docking
     void GUI_UpdateDockingLayout();
     
 
@@ -39,4 +51,7 @@ private:
     bool    b_dockingInitialized = false;
     const float c_dockRatio = 0.3f;
 
+    bool b_TrajectoryNumberActivation = false;
+
+    std::unique_ptr<springTop_App> m_app;
 };
