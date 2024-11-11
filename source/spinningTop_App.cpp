@@ -1,31 +1,31 @@
-#include "springTop_App.hpp"
+#include "spinningTop_App.hpp"
 
 #include <cassert> 
 
-springTop_App::springTop_App()
+spinningTop_App::spinningTop_App()
 {
 	m_paramsSimulation 	= std::make_shared<simulationParameters>();
 	m_paramsDraw 		= std::make_shared<drawParameters>();
 }
 
-springTop_App::~springTop_App()
+spinningTop_App::~spinningTop_App()
 {
 	// DEGUB ONLY
 	assert(("Something still uses shader object", m_paramsDraw.use_count() == 1));
 	assert(("Something still uses shader object", m_paramsSimulation.use_count() == 1));
 }
 
-std::shared_ptr<simulationParameters> springTop_App::GetSimulationParameters()
+std::shared_ptr<simulationParameters> spinningTop_App::GetSimulationParameters()
 {
 	return m_paramsSimulation;
 }
 
-std::shared_ptr<drawParameters> springTop_App::GetDrawParameters()
+std::shared_ptr<drawParameters> spinningTop_App::GetDrawParameters()
 {
 	return m_paramsDraw;
 }
 
-void springTop_App::StartSimulation()
+void spinningTop_App::StartSimulation()
 {
 	switch (m_state)
 	{
@@ -41,7 +41,7 @@ void springTop_App::StartSimulation()
 	}
 }
 
-void springTop_App::StopSimulation()
+void spinningTop_App::StopSimulation()
 {
 	switch (m_state)
 	{
@@ -54,7 +54,7 @@ void springTop_App::StopSimulation()
 	}
 }
 
-void springTop_App::ResetSimulation()
+void spinningTop_App::ResetSimulation()
 {
 	switch (m_state)
 	{
@@ -67,12 +67,12 @@ void springTop_App::ResetSimulation()
 	}
 }
 
-bool springTop_App::IsRunning()
+bool spinningTop_App::IsRunning()
 {
 	return m_state == State::Running;
 }
 
-bool springTop_App::IsStopped()
+bool spinningTop_App::IsStopped()
 {
 	return m_state == State::Stopped;
 }

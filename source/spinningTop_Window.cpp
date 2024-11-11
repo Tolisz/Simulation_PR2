@@ -8,7 +8,7 @@
 {
 	GLFW_SetUpCallbacks();
 
-	m_app = std::make_unique<springTop_App>();
+	m_app = std::make_unique<spinningTop_App>();
 }
 
 /* virtual */ void spiningTop_Window::RunRenderTick() /* override */

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "glfwWindowWrap.hpp"
-#include "springTop_App.hpp"
+#include "spinningTop_App.hpp"
 
 #include <imgui.h>
 #include <string>
@@ -39,7 +39,7 @@ private:
     // Docking
     void GUI_UpdateDockingLayout();
     
-    
+
 private:
 
     const std::string_view c_mainDockingSpaceName = "mainDockingSpace"; 
@@ -53,5 +53,5 @@ private:
 
     bool b_TrajectoryNumberActivation = false;
 
-    std::unique_ptr<springTop_App> m_app;
+    std::unique_ptr<spinningTop_App> m_app;
 };

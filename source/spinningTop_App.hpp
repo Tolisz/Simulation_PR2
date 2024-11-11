@@ -5,16 +5,16 @@
 #include <memory>
 
 
-class springTop_App
+class spinningTop_App
 {
 public:
-	springTop_App();
-	~springTop_App();
+	spinningTop_App();
+	~spinningTop_App();
 
-	springTop_App(springTop_App&&) = delete;
-	springTop_App(const springTop_App&) = delete;
-	springTop_App& operator=(springTop_App&&) = delete;
-	springTop_App& operator=(const springTop_App&) = delete;
+	spinningTop_App(spinningTop_App&&) = delete;
+	spinningTop_App(const spinningTop_App&) = delete;
+	spinningTop_App& operator=(spinningTop_App&&) = delete;
+	spinningTop_App& operator=(const spinningTop_App&) = delete;
 
 	std::shared_ptr<simulationParameters> 	GetSimulationParameters();
 	std::shared_ptr<drawParameters> 		GetDrawParameters();
