@@ -1,17 +1,17 @@
-#include "spiningTop_Window.hpp"
+#include "spinningTop_Window.hpp"
 
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
-/* virtual */ void spiningTop_Window::RunInit() /* override */
+/* virtual */ void spinningTop_Window::RunInit() /* override */
 {
 	GLFW_SetUpCallbacks();
 
 	m_app = std::make_unique<spinningTop_App>();
 }
 
-/* virtual */ void spiningTop_Window::RunRenderTick() /* override */
+/* virtual */ void spinningTop_Window::RunRenderTick() /* override */
 {
 	glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -20,24 +20,24 @@
 
 }
 
-/* virtual */ void spiningTop_Window::RunClear() /* override */
+/* virtual */ void spinningTop_Window::RunClear() /* override */
 {
 	m_app.reset();
 }
 
-void spiningTop_Window::GLFW_SetUpCallbacks()
+void spinningTop_Window::GLFW_SetUpCallbacks()
 {
-	glfwSetFramebufferSizeCallback(m_window, &spiningTop_Window::GLFW_Callback_FramebufferSize);
+	glfwSetFramebufferSizeCallback(m_window, &spinningTop_Window::GLFW_Callback_FramebufferSize);
 }
 
-/* static */ spiningTop_Window* spiningTop_Window::GLFW_GetWindow(GLFWwindow* window)
+/* static */ spinningTop_Window* spinningTop_Window::GLFW_GetWindow(GLFWwindow* window)
 {
-	return reinterpret_cast<spiningTop_Window*>(glfwGetWindowUserPointer(window));
+	return reinterpret_cast<spinningTop_Window*>(glfwGetWindowUserPointer(window));
 }
 
-/* static */ void spiningTop_Window::GLFW_Callback_FramebufferSize(GLFWwindow* window, int width, int height)
+/* static */ void spinningTop_Window::GLFW_Callback_FramebufferSize(GLFWwindow* window, int width, int height)
 {
-	spiningTop_Window* w = GLFW_GetWindow(window);
+	spinningTop_Window* w = GLFW_GetWindow(window);
 	w->m_width = width;
 	w->m_height = height;
 	w->b_dockingInitialized = false; 
@@ -45,7 +45,7 @@ void spiningTop_Window::GLFW_SetUpCallbacks()
 	glViewport(0, 0, width, height);
 }
 
-void spiningTop_Window::GUI_Start()
+void spinningTop_Window::GUI_Start()
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -57,7 +57,7 @@ void spiningTop_Window::GUI_Start()
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void spiningTop_Window::GUI_Main()
+void spinningTop_Window::GUI_Main()
 {
 	GUI_WindowLayout();
 
@@ -67,7 +67,7 @@ void spiningTop_Window::GUI_Main()
         ImGui::ShowDemoWindow(&show_demo_window);
 }
 
-void spiningTop_Window::GUI_WindowLayout()
+void spinningTop_Window::GUI_WindowLayout()
 {
 	// Main Window
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -112,7 +112,7 @@ void spiningTop_Window::GUI_WindowLayout()
 	}
 }
 
-void spiningTop_Window::GUI_WindowSettings()
+void spinningTop_Window::GUI_WindowSettings()
 {
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 	
@@ -125,7 +125,7 @@ void spiningTop_Window::GUI_WindowSettings()
 	ImGui::PopStyleVar(1);
 }
 
-void spiningTop_Window::GUI_SEC_DrawOptions()
+void spinningTop_Window::GUI_SEC_DrawOptions()
 {
 	std::shared_ptr<drawParameters> drawParams = m_app->GetDrawParameters();
 
@@ -145,7 +145,7 @@ void spiningTop_Window::GUI_SEC_DrawOptions()
 	b_TrajectoryNumberActivation = ImGui::IsItemActive();
 }
 
-void spiningTop_Window::GUI_SEC_SimulationOptions()
+void spinningTop_Window::GUI_SEC_SimulationOptions()
 {
 	std::shared_ptr<simulationParameters> simulationParams = m_app->GetSimulationParameters();
 	
@@ -175,7 +175,7 @@ void spiningTop_Window::GUI_SEC_SimulationOptions()
 	ImGui::DragFloat("simulation step", &simulationParams->m_delta, 0.001f, 0.01f, 0.1f, "%.4f");
 }
 
-void spiningTop_Window::GUI_SEC_SimulationActions()
+void spinningTop_Window::GUI_SEC_SimulationActions()
 {
 	ImGui::SeparatorText("Actions");
 
@@ -213,12 +213,12 @@ void spiningTop_Window::GUI_SEC_SimulationActions()
 	ImGui::EndDisabled();	
 }
 
-void spiningTop_Window::GUI_WindowRender()
+void spinningTop_Window::GUI_WindowRender()
 {
 	ImGui::Text("RENDEROWANIE");
 }
 
-void spiningTop_Window::GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color, bool& draw)
+void spinningTop_Window::GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color, bool& draw)
 {	
 	ImGui::ColorEdit4(("##" + name).data(), reinterpret_cast<float*>(&color), 
 		ImGuiColorEditFlags_AlphaBar | 
@@ -230,7 +230,7 @@ void spiningTop_Window::GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color
 }
 
 
-void spiningTop_Window::GUI_UpdateDockingLayout()
+void spinningTop_Window::GUI_UpdateDockingLayout()
 {
 	b_dockingInitialized = true;
 

@@ -3,7 +3,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include "spiningTop_Window.hpp"
+#include "spinningTop_Window.hpp"
 
 #define WINDOW_WIDTH 1536
 #define WINDOW_HEIGHT 864
@@ -31,7 +31,7 @@ int main()
     ImGui::StyleColorsLight();
 
     {
-        spiningTop_Window app;
+        spinningTop_Window app;
         if (!app.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE))
         {
             glfwTerminate();

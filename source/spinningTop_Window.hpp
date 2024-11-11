@@ -8,7 +8,7 @@
 #include <string_view>
 #include <memory>
 
-class spiningTop_Window: public glfwWindowWrap
+class spinningTop_Window: public glfwWindowWrap
 {
 private:
 
@@ -19,7 +19,7 @@ private:
 private: 
 
     void GLFW_SetUpCallbacks();
-    static spiningTop_Window* GLFW_GetWindow(GLFWwindow* window);
+    static spinningTop_Window* GLFW_GetWindow(GLFWwindow* window);
     static void GLFW_Callback_FramebufferSize(GLFWwindow* window, int width, int height);
 
     void GUI_Start();
