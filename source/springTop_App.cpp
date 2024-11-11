@@ -25,3 +25,54 @@ std::shared_ptr<drawParameters> springTop_App::GetDrawParameters()
 	return m_paramsDraw;
 }
 
+void springTop_App::StartSimulation()
+{
+	switch (m_state)
+	{
+	case State::Initial:
+		m_state = State::Running;
+		break;
+	
+	case State::Stopped:
+		m_state = State::Running;
+
+	default:
+		break;
+	}
+}
+
+void springTop_App::StopSimulation()
+{
+	switch (m_state)
+	{
+	case State::Running:
+		m_state = State::Stopped;
+		break;
+	
+	default:
+		break;
+	}
+}
+
+void springTop_App::ResetSimulation()
+{
+	switch (m_state)
+	{
+	case State::Stopped:
+		m_state = State::Initial;
+		break;
+	
+	default:
+		break;
+	}
+}
+
+bool springTop_App::IsRunning()
+{
+	return m_state == State::Running;
+}
+
+bool springTop_App::IsStopped()
+{
+	return m_state == State::Stopped;
+}

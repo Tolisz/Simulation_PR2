@@ -39,7 +39,7 @@ private:
     // Docking
     void GUI_UpdateDockingLayout();
     
-
+    
 private:
 
     const std::string_view c_mainDockingSpaceName = "mainDockingSpace"; 

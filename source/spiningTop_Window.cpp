@@ -119,6 +119,7 @@ void spiningTop_Window::GUI_WindowSettings()
 	GUI_SEC_SimulationActions();
 	GUI_SEC_SimulationOptions();
 	GUI_SEC_DrawOptions();
+	
 	ImGui::SeparatorText("Miscellaneous Information");
 	
 	ImGui::PopStyleVar(1);
@@ -178,7 +179,38 @@ void spiningTop_Window::GUI_SEC_SimulationActions()
 {
 	ImGui::SeparatorText("Actions");
 
+	float win_width = ImGui::GetWindowWidth();
+	float padding = ImGui::GetStyle().WindowPadding.x;
+	float spacing = ImGui::GetStyle().ItemSpacing.x;
+	float buttonWidth = (win_width - 2 * padding - 2 * spacing) / 3.0f;
+	float sliderWidth = 2 * buttonWidth + spacing; 
+	ImVec2 buttonSize{buttonWidth, 40.0f};	
 
+	bool isSimulationRun = m_app->IsRunning();
+	bool isSimulationPaused = m_app->IsStopped();
+
+	ImGui::BeginDisabled(isSimulationRun);
+	if (ImGui::Button(isSimulationPaused ? "CONTINUE" : "START", buttonSize))
+	{
+		m_app->StartSimulation();
+	}
+	ImGui::EndDisabled();
+
+	ImGui::BeginDisabled(!isSimulationRun);
+	ImGui::SameLine();
+	if (ImGui::Button("STOP", buttonSize))
+	{
+		m_app->StopSimulation();
+	}
+	ImGui::EndDisabled();
+
+	ImGui::BeginDisabled(!isSimulationPaused);
+	ImGui::SameLine();
+	if(ImGui::Button("RESET", buttonSize))
+	{
+		m_app->ResetSimulation();
+	}
+	ImGui::EndDisabled();	
 }
 
 void spiningTop_Window::GUI_WindowRender()
