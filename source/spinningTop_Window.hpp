@@ -36,8 +36,9 @@ private:
     // UI Elements
     void GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color, bool& draw);
 
-    // Docking
+    // GUI miscellaneous
     void GUI_UpdateDockingLayout();
+    void GUI_UpdateRenderRegion();
     
 
 private:
@@ -48,10 +49,12 @@ private:
     const std::string_view c_windowNameSettings = "Simulation Parameters";
 
     ImGuiID m_mainDockingSpace;
-    bool    b_dockingInitialized = false;
     const float c_dockRatio = 0.3f;
-
-    bool b_TrajectoryNumberActivation = false;
+    
+    bool b_dockingInitialized       = false;
+    bool b_TrajectoryNumberChanging = false;
+    
+    ImVec2 m_lastRenderRegion = {0, 0};
 
     std::unique_ptr<spinningTop_App> m_app;
 };

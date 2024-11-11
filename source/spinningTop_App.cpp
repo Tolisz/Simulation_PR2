@@ -6,6 +6,8 @@ spinningTop_App::spinningTop_App()
 {
 	m_paramsSimulation 	= std::make_shared<simulationParameters>();
 	m_paramsDraw 		= std::make_shared<drawParameters>();
+
+	m_renderer = std::make_unique<spinningTop_Renderer>();
 }
 
 spinningTop_App::~spinningTop_App()
@@ -75,4 +77,22 @@ bool spinningTop_App::IsRunning()
 bool spinningTop_App::IsStopped()
 {
 	return m_state == State::Stopped;
+}
+
+void spinningTop_App::RenderScene()
+{
+	m_renderer->Render();
+}
+
+GLuint spinningTop_App::GetRenderTexture()
+{
+	return m_renderer->GetRenderTexture();
+}
+
+void spinningTop_App::SetRenderArea(int width, int height)
+{
+	if (width <= 0 || height <= 0)
+		return;
+
+	m_renderer->UpdateRenderArea(width, height);
 }

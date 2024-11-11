@@ -2,6 +2,7 @@
 
 #include "simulationParameters.hpp"
 #include "drawParameters.hpp"
+#include "spinningTop_Renderer.hpp"
 #include <memory>
 
 
@@ -26,6 +27,10 @@ public:
 	bool IsRunning();
 	bool IsStopped();
 
+	void RenderScene();
+	GLuint GetRenderTexture();
+	void SetRenderArea(int width, int height);
+
 private:
 
 	std::shared_ptr<simulationParameters> 	m_paramsSimulation;
@@ -39,4 +44,5 @@ private:
 	} 
 	m_state = State::Initial;
 
+	std::unique_ptr<spinningTop_Renderer> 	m_renderer;
 };

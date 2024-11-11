@@ -19,7 +19,7 @@
 	GUI_Start();
 
 }
-
+	
 /* virtual */ void spinningTop_Window::RunClear() /* override */
 {
 	m_app.reset();
@@ -99,11 +99,13 @@ void spinningTop_Window::GUI_WindowLayout()
 	ImGui::End();
 
 	// Render Window
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Begin(c_windowNameRender.data())) 
 	{
 		GUI_WindowRender();
 	}
 	ImGui::End();
+	ImGui::PopStyleVar(1);
 
 	// Update Docking if necessary.
 	if (!b_dockingInitialized)
@@ -138,11 +140,11 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 	float itemWidth = ImGui::GetWindowWidth() * 0.4f;
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::DragInt("Number of trajectorys' points", &drawParams->m_trajectoryPointsNum, 100, 100, 1000000, "%d", ImGuiSliderFlags_AlwaysClamp);
-	if (b_TrajectoryNumberActivation == true && ImGui::IsItemActive() == false)
+	if (b_TrajectoryNumberChanging == true && ImGui::IsItemActive() == false)
 	{
 		// std::cout << "Aktualizacja" << std::endl;
 	}
-	b_TrajectoryNumberActivation = ImGui::IsItemActive();
+	b_TrajectoryNumberChanging = ImGui::IsItemActive();
 }
 
 void spinningTop_Window::GUI_SEC_SimulationOptions()
@@ -215,7 +217,19 @@ void spinningTop_Window::GUI_SEC_SimulationActions()
 
 void spinningTop_Window::GUI_WindowRender()
 {
-	ImGui::Text("RENDEROWANIE");
+	GUI_UpdateRenderRegion();
+
+	m_app->RenderScene();
+
+	GLuint tex = m_app->GetRenderTexture();
+	ImVec2 pos = ImGui::GetCursorScreenPos();
+	ImGui::GetWindowDrawList()->AddImage(
+			tex, 
+			pos, 
+			ImVec2(pos.x + m_lastRenderRegion.x, pos.y + m_lastRenderRegion.y), 
+			ImVec2(0, 1), 
+			ImVec2(1, 0)
+		);
 }
 
 void spinningTop_Window::GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& color, bool& draw)
@@ -245,4 +259,18 @@ void spinningTop_Window::GUI_UpdateDockingLayout()
 	ImGui::DockBuilderDockWindow(c_windowNameRender.data(), dock_L);
 
 	ImGui::DockBuilderFinish(m_mainDockingSpace);
+}
+
+void spinningTop_Window::GUI_UpdateRenderRegion()
+{
+	ImVec2 currentRenderRegion = ImGui::GetContentRegionAvail();
+	if (currentRenderRegion.x != m_lastRenderRegion.x || 
+		currentRenderRegion.y != m_lastRenderRegion.y)
+	{
+		m_lastRenderRegion = currentRenderRegion;
+		int width = static_cast<int>(currentRenderRegion.x);
+		int height = static_cast<int>(currentRenderRegion.y);
+
+		m_app->SetRenderArea(width, height);
+	}
 }
