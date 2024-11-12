@@ -4,6 +4,8 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
+#include <iostream>
+
 /* virtual */ void spinningTop_Window::RunInit() /* override */
 {
 	glfwSwapInterval(0);
@@ -29,6 +31,8 @@
 void spinningTop_Window::GLFW_SetUpCallbacks()
 {
 	glfwSetFramebufferSizeCallback(m_window, &spinningTop_Window::GLFW_Callback_FramebufferSize);
+	glfwSetCursorPosCallback(m_window, &spinningTop_Window::GLFW_Callback_CursorPos);
+	glfwSetMouseButtonCallback(m_window, &spinningTop_Window::GLFW_Callback_MouseButton);
 }
 
 /* static */ spinningTop_Window* spinningTop_Window::GLFW_GetWindow(GLFWwindow* window)
@@ -45,6 +49,93 @@ void spinningTop_Window::GLFW_SetUpCallbacks()
 	
 	glViewport(0, 0, width, height);
 }
+
+/* static */ void spinningTop_Window::GLFW_Callback_CursorPos(GLFWwindow* window, double xpos, double ypos)
+{
+	spinningTop_Window* w = GLFW_GetWindow(window);
+	
+	bool leftClick = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+	bool rightClick = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
+	
+	if (w->m_renderInterationState == RenderWindowInteration::None)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+    	io.AddMousePosEvent(xpos, ypos);
+		return;
+	}
+
+	float deltaX = xpos - w->m_lastMousePos.x;
+	float deltaY = ypos - w->m_lastMousePos.y;
+	w->m_lastMousePos.x = xpos;
+	w->m_lastMousePos.y = ypos;
+
+	float speed = w->m_cameraSpeed;
+	switch (w->m_renderInterationState)
+	{
+	case RenderWindowInteration::Camera_Rotation:
+		w->m_app->UpdateCameraRotation(-deltaX * speed, -deltaY * speed);
+		break;
+	
+	case RenderWindowInteration::Camera_Zoom:
+		w->m_app->UpdateCameraPosition(deltaY * speed);
+		break;
+	}
+}
+
+/* static */ void spinningTop_Window::GLFW_Callback_MouseButton(GLFWwindow* window, int button, int action, int mods)
+{
+	ImGuiIO& io = ImGui::GetIO();
+    io.AddMouseButtonEvent(button, action == GLFW_PRESS);
+
+	spinningTop_Window* w = GLFW_GetWindow(window);
+	if (!w->b_overRenderWindow && w->m_renderInterationState == RenderWindowInteration::None)
+		return;
+
+	switch (button)
+	{
+	case GLFW_MOUSE_BUTTON_LEFT:
+		GLFW_Callback_MouseButton_Left(w, action, mods);
+		break;
+
+	case GLFW_MOUSE_BUTTON_RIGHT:
+		GLFW_Callback_MouseButton_Right(w, action, mods);
+		break;
+	}
+
+}	
+
+/* static */ void spinningTop_Window::GLFW_Callback_MouseButton_Left(spinningTop_Window* w, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(w->m_window, &xpos, &ypos);
+
+		w->m_lastMousePos = {xpos, ypos}; 
+		w->m_renderInterationState = RenderWindowInteration::Camera_Rotation;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		w->m_renderInterationState = RenderWindowInteration::None;
+	}
+}
+
+/* static */ void spinningTop_Window::GLFW_Callback_MouseButton_Right(spinningTop_Window* w, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(w->m_window, &xpos, &ypos);
+
+		w->m_lastMousePos = {xpos, ypos}; 
+		w->m_renderInterationState = RenderWindowInteration::Camera_Zoom;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		w->m_renderInterationState = RenderWindowInteration::None;
+	}
+}
+
 
 void spinningTop_Window::GUI_Start()
 {
@@ -247,6 +338,7 @@ void spinningTop_Window::GUI_SEC_MiscellaneousInfo()
 
 void spinningTop_Window::GUI_WindowRender()
 {
+	b_overRenderWindow = ImGui::IsWindowHovered();
 	GUI_UpdateRenderRegion();
 
 	m_app->RenderScene();

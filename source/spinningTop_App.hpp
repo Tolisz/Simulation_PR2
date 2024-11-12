@@ -30,7 +30,9 @@ public:
 	void RenderScene();
 	GLuint GetRenderTexture();
 	void SetRenderArea(int width, int height);
-
+	void UpdateCameraPosition(float delta);
+	void UpdateCameraRotation(float rotX, float rotY);
+	
 private:
 
 	std::shared_ptr<simulationParameters> 	m_paramsSimulation;

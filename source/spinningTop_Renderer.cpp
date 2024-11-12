@@ -5,6 +5,8 @@
 spinningTop_Renderer::spinningTop_Renderer()
 {
 	SetUpFramebuffer();
+	SetUpScene();
+
 }
 
 spinningTop_Renderer::~spinningTop_Renderer()
@@ -21,8 +23,18 @@ void spinningTop_Renderer::Render()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
 
+    float aspect = static_cast<float>(m_sceneSize.x)/m_sceneSize.y;
+    glm::mat4 viewProj[2] = {m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix(aspect)};
+
+	m_UBO_Matrices.BindUBO();
+	m_UBO_Matrices.SetBufferData(0, viewProj, 2 * sizeof(glm::mat4));
+
 	glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	m_gridShader.Use();
+	glBindVertexArray(m_VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -49,6 +61,16 @@ void spinningTop_Renderer::UpdateRenderArea(int width, int height)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void spinningTop_Renderer::UpdateCameraRotation(float rotX, float rotY)
+{
+	m_camera.UpdateRotation(rotX, rotY);
+}
+
+void spinningTop_Renderer::UpdateCameraPosition(float delta)
+{
+	m_camera.UpdatePosition(delta);
+}
+
 void spinningTop_Renderer::SetUpFramebuffer()
 {
 	glGenFramebuffers(1, &m_Framebuffer);
@@ -65,4 +87,37 @@ void spinningTop_Renderer::SetUpFramebuffer()
 	assert(("Framebuffer is not complete", glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void spinningTop_Renderer::SetUpScene()
+{
+	m_gridShader.Init();
+	m_gridShader.AttachShader("./shaders/test.vert", GL_VERTEX_SHADER);
+	m_gridShader.AttachShader("./shaders/test.frag", GL_FRAGMENT_SHADER);
+	m_gridShader.Link();
+
+	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
+    m_UBO_Matrices.BindBufferBaseToBindingPoint(0);
+
+	float vertices[] = {
+        // positions         // colors
+         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
+         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
+
+    };
+
+	glGenVertexArrays(1, &m_VAO);
+    glGenBuffers(1, &m_VBO);
+    glBindVertexArray(m_VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+
 }

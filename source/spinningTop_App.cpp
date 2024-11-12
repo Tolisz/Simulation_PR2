@@ -96,3 +96,14 @@ void spinningTop_App::SetRenderArea(int width, int height)
 
 	m_renderer->UpdateRenderArea(width, height);
 }
+
+void spinningTop_App::UpdateCameraPosition(float delta)
+{
+	m_renderer->UpdateCameraPosition(delta);
+}
+
+void spinningTop_App::UpdateCameraRotation(float rotX, float rotY)
+{
+	m_renderer->UpdateCameraRotation(rotX, rotY);
+}
+
