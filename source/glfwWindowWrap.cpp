@@ -37,12 +37,15 @@ void glfwWindowWrap::RunApp()
     
     while (!glfwWindowShouldClose(m_window))
     {
-        UpdateDeltatime();
-
-        RunRenderTick();
-        glfwSwapBuffers(m_window);
         glfwPollEvents();
 
+        double now = glfwGetTime();
+        if (!b_limitFPS || now - m_lastTime > 1 / m_framerate)
+        {
+            UpdateDeltatime();
+            RunRenderTick();
+            glfwSwapBuffers(m_window);
+        }
     }
 
     RunClear();
@@ -56,7 +59,7 @@ GLFWwindow* glfwWindowWrap::GetWindowPointer()
 void glfwWindowWrap::UpdateDeltatime()
 {
     // Compute the rendering time of the previous frame.
-    m_currentTime = static_cast<float>(glfwGetTime());
+    m_currentTime = glfwGetTime();
     m_deltaTime = m_currentTime - m_lastTime;
     m_lastTime = m_currentTime;
 }

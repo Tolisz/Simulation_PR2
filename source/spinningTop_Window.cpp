@@ -6,6 +6,7 @@
 
 /* virtual */ void spinningTop_Window::RunInit() /* override */
 {
+	glfwSwapInterval(0);
 	GLFW_SetUpCallbacks();
 
 	m_app = std::make_unique<spinningTop_App>();
@@ -121,8 +122,7 @@ void spinningTop_Window::GUI_WindowSettings()
 	GUI_SEC_SimulationActions();
 	GUI_SEC_SimulationOptions();
 	GUI_SEC_DrawOptions();
-	
-	ImGui::SeparatorText("Miscellaneous Information");
+	GUI_SEC_MiscellaneousInfo();
 	
 	ImGui::PopStyleVar(1);
 }
@@ -213,6 +213,36 @@ void spinningTop_Window::GUI_SEC_SimulationActions()
 		m_app->ResetSimulation();
 	}
 	ImGui::EndDisabled();	
+}
+
+void spinningTop_Window::GUI_SEC_MiscellaneousInfo()
+{
+	ImGui::SeparatorText("Miscellaneous Information");
+
+	float win_width = ImGui::GetWindowWidth();
+	float padding = ImGui::GetStyle().WindowPadding.x;
+	float counterWidth = 80.0f + padding;
+	
+	ImGui::BeginDisabled(!b_limitFPS);
+
+	int framerate = static_cast<int>(m_framerate);
+	ImGui::SetNextItemWidth(win_width * 0.5f);
+	if (ImGui::InputInt("##FPS Limit Input", &framerate, 15, 50) )
+	{
+		if (framerate <= 30) 
+			framerate = 30;
+		
+		m_framerate = static_cast<double>(framerate);
+	}
+
+	ImGui::EndDisabled();
+
+	ImGui::SameLine();	
+	ImGui::Checkbox("Limit FPS", &b_limitFPS);
+	ImGui::SameLine(win_width * 0.8f);
+	
+	ImGui::TextColored(b_limitFPS ? ImGui::GetStyle().Colors[ImGuiCol_Text] : ImVec4(1.0f, 0.0f, 0.0f, 1.0f), 
+		"FPS: %6.2f", 1.0f / m_deltaTime);
 }
 
 void spinningTop_Window::GUI_WindowRender()

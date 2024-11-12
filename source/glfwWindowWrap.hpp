@@ -8,18 +8,18 @@ class glfwWindowWrap
 protected:
 
     GLFWwindow* m_window = nullptr;
-    float m_deltaTime = 0.0f;
+    double m_deltaTime = 0.0f;
 
     int m_width = 0;
     int m_height = 0;
 
+    bool b_limitFPS = true;
+    double m_framerate = 120.0f;
+
 private:
 
-    float m_currentTime = 0.0f;
-    float m_lastTime = 0.0f;
-
-    bool limitFPS = true;
-    double fpsLimit = 1.0 / 60.0; // 60 frame per second;
+    double m_currentTime = 0.0f;
+    double m_lastTime = 0.0f;
 
 public: 
 
