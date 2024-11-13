@@ -81,7 +81,7 @@ bool spinningTop_App::IsStopped()
 
 void spinningTop_App::RenderScene()
 {
-	m_renderer->Render();
+	m_renderer->Render(m_paramsDraw);
 }
 
 GLuint spinningTop_App::GetRenderTexture()

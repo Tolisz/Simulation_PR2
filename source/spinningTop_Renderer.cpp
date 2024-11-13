@@ -1,6 +1,7 @@
 #include "spinningTop_Renderer.hpp"
 
 #include <assert.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 spinningTop_Renderer::spinningTop_Renderer()
 {
@@ -16,11 +17,14 @@ spinningTop_Renderer::~spinningTop_Renderer()
 	glDeleteRenderbuffers(1, &m_Renderbuffer);
 }
 
-void spinningTop_Renderer::Render()
+void spinningTop_Renderer::Render(std::shared_ptr<const drawParameters> drawParams)
 {
-	glViewport(0, 0, m_sceneSize.x, m_sceneSize.y);
 	glEnable(GL_DEPTH_TEST);
-
+	glEnable( GL_BLEND );
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glViewport(0, 0, m_sceneSize.x, m_sceneSize.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
 
     float aspect = static_cast<float>(m_sceneSize.x)/m_sceneSize.y;
@@ -29,12 +33,21 @@ void spinningTop_Renderer::Render()
 	m_UBO_Matrices.BindUBO();
 	m_UBO_Matrices.SetBufferData(0, viewProj, 2 * sizeof(glm::mat4));
 
-	glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_gridShader.Use();
-	glBindVertexArray(m_VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	if (drawParams->b_drawCube)
+	{
+		m_shader_cube.Use();
+		m_shader_cube.set4fv("objectColor", drawParams->m_colorCube);
+
+		m_shader_cube.setM4fv("model", false, m_cubeModelMatrix);
+		m_cube->Draw();
+	}
+
+	// m_testShader.Use();
+	// glBindVertexArray(m_VAO);
+	// glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -91,33 +104,52 @@ void spinningTop_Renderer::SetUpFramebuffer()
 
 void spinningTop_Renderer::SetUpScene()
 {
-	m_gridShader.Init();
-	m_gridShader.AttachShader("./shaders/test.vert", GL_VERTEX_SHADER);
-	m_gridShader.AttachShader("./shaders/test.frag", GL_FRAGMENT_SHADER);
-	m_gridShader.Link();
+	PrepareShaders();
+
+	m_cube = std::make_unique<obj_cube>();
+
+	float xRot = -glm::acos(glm::sqrt(3) / 3);
+	m_cubeModelMatrix =
+		glm::rotate(glm::mat4(1.0f), xRot, {1.0f, 0.0f, 0.0f}) * 
+		glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), {0.0f, 1.0f, 0.0f}) * 
+		glm::translate(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f}) * 
+		glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5});
+	
+	// float vertices[] = {
+    //     // positions         // colors
+    //      1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
+    //     -1.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
+    //      1.0f,  1.0f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
+    // };
+
+	// glGenVertexArrays(1, &m_VAO);
+    // glGenBuffers(1, &m_VBO);
+
+    // glBindVertexArray(m_VAO);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
+
+
+}
+
+void spinningTop_Renderer::PrepareShaders()
+{
+	// m_testShader.Init();
+	// m_testShader.AttachShader("./shaders/test.vert", GL_VERTEX_SHADER);
+	// m_testShader.AttachShader("./shaders/test.frag", GL_FRAGMENT_SHADER);
+	// m_testShader.Link();
+
+	m_shader_cube.Init();
+	m_shader_cube.AttachShader("./shaders/cube.vert", GL_VERTEX_SHADER);
+	m_shader_cube.AttachShader("./shaders/cube.frag", GL_FRAGMENT_SHADER);
+	m_shader_cube.Link();
 
 	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
     m_UBO_Matrices.BindBufferBaseToBindingPoint(0);
-
-	float vertices[] = {
-        // positions         // colors
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
-
-    };
-
-	glGenVertexArrays(1, &m_VAO);
-    glGenBuffers(1, &m_VBO);
-    glBindVertexArray(m_VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-
 }
