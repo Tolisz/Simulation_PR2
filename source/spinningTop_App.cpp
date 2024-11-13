@@ -7,7 +7,8 @@ spinningTop_App::spinningTop_App()
 	m_paramsSimulation 	= std::make_shared<simulationParameters>();
 	m_paramsDraw 		= std::make_shared<drawParameters>();
 
-	m_renderer = std::make_unique<spinningTop_Renderer>();
+	m_renderer 		= std::make_unique<spinningTop_Renderer>();
+	m_simThread		= std::make_unique<simulationThread>();
 }
 
 spinningTop_App::~spinningTop_App()
@@ -33,11 +34,12 @@ void spinningTop_App::StartSimulation()
 	{
 	case State::Initial:
 		m_state = State::Running;
+		m_simThread->StartSimulation();
 		break;
 	
 	case State::Stopped:
 		m_state = State::Running;
-
+		m_simThread->ContinueSimulation();
 	default:
 		break;
 	}
@@ -49,6 +51,7 @@ void spinningTop_App::StopSimulation()
 	{
 	case State::Running:
 		m_state = State::Stopped;
+		m_simThread->StopSimulation();
 		break;
 	
 	default:
@@ -62,6 +65,7 @@ void spinningTop_App::ResetSimulation()
 	{
 	case State::Stopped:
 		m_state = State::Initial;
+		m_simThread->EndSimulation();
 		break;
 	
 	default:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 struct simulationParameters
 {
@@ -11,4 +12,10 @@ struct simulationParameters
 
 	float m_delta 			= 0.01f;		
 	bool b_Gravity			= true;			// Trun on/off gravity
+};
+
+struct simulationResult 
+{
+	glm::vec3	W;
+	glm::quat	Q;
 };

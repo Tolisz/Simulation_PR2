@@ -45,10 +45,6 @@ void spinningTop_Renderer::Render(std::shared_ptr<const drawParameters> drawPara
 		m_cube->Draw();
 	}
 
-	// m_testShader.Use();
-	// glBindVertexArray(m_VAO);
-	// glDrawArrays(GL_TRIANGLES, 0, 3);
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -114,37 +110,10 @@ void spinningTop_Renderer::SetUpScene()
 		glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), {0.0f, 1.0f, 0.0f}) * 
 		glm::translate(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f}) * 
 		glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5});
-	
-	// float vertices[] = {
-    //     // positions         // colors
-    //      1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-    //     -1.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-    //      1.0f,  1.0f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
-    // };
-
-	// glGenVertexArrays(1, &m_VAO);
-    // glGenBuffers(1, &m_VBO);
-
-    // glBindVertexArray(m_VAO);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
-
 }
 
 void spinningTop_Renderer::PrepareShaders()
 {
-	// m_testShader.Init();
-	// m_testShader.AttachShader("./shaders/test.vert", GL_VERTEX_SHADER);
-	// m_testShader.AttachShader("./shaders/test.frag", GL_FRAGMENT_SHADER);
-	// m_testShader.Link();
-
 	m_shader_cube.Init();
 	m_shader_cube.AttachShader("./shaders/cube.vert", GL_VERTEX_SHADER);
 	m_shader_cube.AttachShader("./shaders/cube.frag", GL_FRAGMENT_SHADER);

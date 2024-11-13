@@ -3,8 +3,8 @@
 #include "simulationParameters.hpp"
 #include "drawParameters.hpp"
 #include "spinningTop_Renderer.hpp"
+#include "simulationThread.hpp"
 #include <memory>
-
 
 class spinningTop_App
 {
@@ -47,4 +47,5 @@ private:
 	m_state = State::Initial;
 
 	std::unique_ptr<spinningTop_Renderer> 	m_renderer;
+	std::unique_ptr<simulationThread> 		m_simThread;
 };

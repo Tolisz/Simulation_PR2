@@ -44,10 +44,6 @@ private:
 
 	uniformBufferObject m_UBO_Matrices; 
 
-	// shader		m_testShader;
-	// GLuint 		m_VAO;
-	// GLuint 		m_VBO;
-
 	shader m_shader_cube;
 	std::unique_ptr<obj_cube> m_cube;
 	glm::mat4 m_cubeModelMatrix;
