@@ -27,7 +27,7 @@ void simulationThread::StopSimulation()
 {
 	if (b_isThreadRunning)
 	{
-		m_stopSimulation.lock();
+		m_blockSimulation.lock();
 	}
 }
 
@@ -35,7 +35,7 @@ void simulationThread::ContinueSimulation()
 {
 	if (b_isThreadRunning)
 	{
-		m_stopSimulation.unlock();
+		m_blockSimulation.unlock();
 	}
 }
 
@@ -44,7 +44,7 @@ void simulationThread::EndSimulation()
 	if (b_isThreadRunning)
 	{
 		b_shouldEndSimulation = true;
-		m_stopSimulation.unlock();
+		m_blockSimulation.unlock();
 
 		m_simulationThread.join();
 		b_isThreadRunning = false;
@@ -55,12 +55,12 @@ void simulationThread::SimulationThread()
 {
 	while (true)
 	{
-		m_stopSimulation.lock();
+		m_blockSimulation.lock();
 		if (b_shouldEndSimulation)  {
-			m_stopSimulation.unlock();
+			m_blockSimulation.unlock();
 			break; 
 		}
-		m_stopSimulation.unlock();
+		m_blockSimulation.unlock();
 
 		std::this_thread::sleep_for(std::chrono::duration<double>(0.5));
 		std::cout << "Jestem" << std::endl;

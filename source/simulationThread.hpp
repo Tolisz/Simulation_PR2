@@ -32,9 +32,8 @@ private:
 private:
 
 	std::thread m_simulationThread;
-	bool b_isThreadRunning;
+	bool b_isThreadRunning = false;
 
-	std::mutex 			m_stopSimulation;
+	std::mutex 			m_blockSimulation;
 	std::atomic_bool 	b_shouldEndSimulation;
-	bool 				b_SimulationStopped;
 };
