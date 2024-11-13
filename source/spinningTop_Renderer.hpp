@@ -8,6 +8,7 @@
 #include "uniformBufferObject.hpp"
 #include "obj_cube.hpp"
 #include "drawParameters.hpp"
+#include "simulationParameters.hpp"
 
 class spinningTop_Renderer
 {
@@ -21,7 +22,9 @@ public:
 	spinningTop_Renderer& operator=(const spinningTop_Renderer&) = delete;
 	spinningTop_Renderer& operator=(spinningTop_Renderer&&) = delete;
 
-	void Render(std::shared_ptr<const drawParameters> drawParams);
+	void Render(
+		std::shared_ptr<const drawParameters> 	drawParams,
+		const simulationDrawParameters& 		simResult);
 	GLuint GetRenderTexture();
 
 	void UpdateRenderArea(int width, int height);
@@ -46,5 +49,5 @@ private:
 
 	shader m_shader_cube;
 	std::unique_ptr<obj_cube> m_cube;
-	glm::mat4 m_cubeModelMatrix;
+	glm::mat4 m_cubeInitModelMatrix;	// Model matrix for a cube with edge length 1.
 };

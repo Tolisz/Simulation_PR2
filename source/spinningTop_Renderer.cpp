@@ -17,7 +17,9 @@ spinningTop_Renderer::~spinningTop_Renderer()
 	glDeleteRenderbuffers(1, &m_Renderbuffer);
 }
 
-void spinningTop_Renderer::Render(std::shared_ptr<const drawParameters> drawParams)
+void spinningTop_Renderer::Render(
+	std::shared_ptr<const drawParameters> 	drawParams, 
+	const simulationDrawParameters& 		simResult)
 {
 	glEnable(GL_DEPTH_TEST);
 	glEnable( GL_BLEND );
@@ -41,7 +43,12 @@ void spinningTop_Renderer::Render(std::shared_ptr<const drawParameters> drawPara
 		m_shader_cube.Use();
 		m_shader_cube.set4fv("objectColor", drawParams->m_colorCube);
 
-		m_shader_cube.setM4fv("model", false, m_cubeModelMatrix);
+		glm::mat4 model =
+			glm::mat4_cast(simResult.m_Q) * 
+			glm::scale(glm::mat4(1.0f), glm::vec3(simResult.m_cubeEdgeLength)) *
+			m_cubeInitModelMatrix;
+		
+		m_shader_cube.setM4fv("model", false, model);
 		m_cube->Draw();
 	}
 
@@ -105,7 +112,7 @@ void spinningTop_Renderer::SetUpScene()
 	m_cube = std::make_unique<obj_cube>();
 
 	float xRot = -glm::acos(glm::sqrt(3) / 3);
-	m_cubeModelMatrix =
+	m_cubeInitModelMatrix =
 		glm::rotate(glm::mat4(1.0f), xRot, {1.0f, 0.0f, 0.0f}) * 
 		glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), {0.0f, 1.0f, 0.0f}) * 
 		glm::translate(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f}) * 

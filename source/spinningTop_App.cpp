@@ -85,7 +85,15 @@ bool spinningTop_App::IsStopped()
 
 void spinningTop_App::RenderScene()
 {
-	m_renderer->Render(m_paramsDraw);
+	simulationDrawParameters simDrawParams;
+	if (m_state == State::Initial) {
+		simDrawParams = GetStartSimulationDrawParams();
+	}
+	else {
+		simDrawParams = GetCurrentSimulationDrawParams();
+	}
+
+	m_renderer->Render(m_paramsDraw, simDrawParams);
 }
 
 GLuint spinningTop_App::GetRenderTexture()
@@ -111,3 +119,25 @@ void spinningTop_App::UpdateCameraRotation(float rotX, float rotY)
 	m_renderer->UpdateCameraRotation(rotX, rotY);
 }
 
+simulationDrawParameters spinningTop_App::GetStartSimulationDrawParams()
+{
+	simulationDrawParameters params;
+	params.m_cubeEdgeLength = m_paramsSimulation->m_cubeEdgeLength;
+	params.m_Q =  glm::angleAxis(m_paramsSimulation->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
+
+	return params;
+}
+
+simulationDrawParameters spinningTop_App::GetCurrentSimulationDrawParams()
+{
+	simulationDrawParameters params;
+	
+	/*
+		Do dopisania później
+	*/
+
+	params.m_cubeEdgeLength = m_paramsSimulation->m_cubeEdgeLength;
+	params.m_Q =  glm::angleAxis(m_paramsSimulation->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
+	
+	return params;
+}

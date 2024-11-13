@@ -14,8 +14,9 @@ struct simulationParameters
 	bool b_Gravity			= true;			// Trun on/off gravity
 };
 
-struct simulationResult 
+struct simulationDrawParameters 
 {
-	glm::vec3	W;
-	glm::quat	Q;
+	float m_cubeEdgeLength;
+
+	glm::quat	m_Q;
 };

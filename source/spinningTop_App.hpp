@@ -35,6 +35,11 @@ public:
 	
 private:
 
+	simulationDrawParameters GetStartSimulationDrawParams();
+	simulationDrawParameters GetCurrentSimulationDrawParams();
+
+private:
+
 	std::shared_ptr<simulationParameters> 	m_paramsSimulation;
 	std::shared_ptr<drawParameters> 		m_paramsDraw;
 
