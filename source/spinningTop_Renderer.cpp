@@ -38,18 +38,31 @@ void spinningTop_Renderer::Render(
 	glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glm::mat4 model =
+		glm::mat4_cast(simResult.m_Q) * 
+		glm::scale(glm::mat4(1.0f), glm::vec3(simResult.m_cubeEdgeLength)) *
+		m_cubeInitModelMatrix;
+
 	if (drawParams->b_drawCube)
 	{
 		m_shader_cube.Use();
 		m_shader_cube.set4fv("objectColor", drawParams->m_colorCube);
 
-		glm::mat4 model =
-			glm::mat4_cast(simResult.m_Q) * 
-			glm::scale(glm::mat4(1.0f), glm::vec3(simResult.m_cubeEdgeLength)) *
-			m_cubeInitModelMatrix;
-		
 		m_shader_cube.setM4fv("model", false, model);
 		m_cube->Draw();
+	}
+
+	if (drawParams->b_drawDiagonal)
+	{
+		m_shader_cubeDiagonal.Use();
+		m_shader_cubeDiagonal.set4fv("lineColor", drawParams->m_colorDiagonal);
+		m_shader_cubeDiagonal.setM4fv("model", false, model);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+
+	if (drawParams->b_drawTrajectory)
+	{
+		
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -125,6 +138,11 @@ void spinningTop_Renderer::PrepareShaders()
 	m_shader_cube.AttachShader("./shaders/cube.vert", GL_VERTEX_SHADER);
 	m_shader_cube.AttachShader("./shaders/cube.frag", GL_FRAGMENT_SHADER);
 	m_shader_cube.Link();
+
+	m_shader_cubeDiagonal.Init();
+	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.vert", GL_VERTEX_SHADER);
+	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.frag", GL_FRAGMENT_SHADER);
+	m_shader_cubeDiagonal.Link();
 
 	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
     m_UBO_Matrices.BindBufferBaseToBindingPoint(0);

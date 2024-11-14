@@ -47,7 +47,12 @@ private:
 
 	uniformBufferObject m_UBO_Matrices; 
 
+	// Cube
 	shader m_shader_cube;
 	std::unique_ptr<obj_cube> m_cube;
 	glm::mat4 m_cubeInitModelMatrix;	// Model matrix for a cube with edge length 1.
+
+	// Cube's diagonal
+	shader m_shader_cubeDiagonal;
+	
 };
