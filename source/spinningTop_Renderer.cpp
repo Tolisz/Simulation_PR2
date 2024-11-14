@@ -62,7 +62,13 @@ void spinningTop_Renderer::Render(
 
 	if (drawParams->b_drawTrajectory)
 	{
-		
+		m_shader_trajectory.Use();
+		m_shader_trajectory.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
+
+		glPointSize(3.0f);
+		glBindVertexArray(m_trajectoryVertexArray);
+		glDrawArrays(GL_POINTS, 0, 3);
+		glPointSize(1.0f);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -122,6 +128,7 @@ void spinningTop_Renderer::SetUpScene()
 {
 	PrepareShaders();
 
+	// CUBE
 	m_cube = std::make_unique<obj_cube>();
 
 	float xRot = -glm::acos(glm::sqrt(3) / 3);
@@ -130,6 +137,22 @@ void spinningTop_Renderer::SetUpScene()
 		glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), {0.0f, 1.0f, 0.0f}) * 
 		glm::translate(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f}) * 
 		glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5});
+	
+	// TRAJECTORY
+	float vertices[] = {
+        // positions        
+         1.0f, -1.0f, 0.0f,  // bottom right
+        -1.0f, -1.0f, 0.0f,  // bottom left
+         1.0f,  1.0f, 0.0f,  // top 
+    };
+	glGenVertexArrays(1, &m_trajectoryVertexArray);
+    glGenBuffers(1, &m_trajectoryPointsBuffer);
+    glBindVertexArray(m_trajectoryVertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, m_trajectoryPointsBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 }
 
 void spinningTop_Renderer::PrepareShaders()
@@ -143,6 +166,11 @@ void spinningTop_Renderer::PrepareShaders()
 	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.vert", GL_VERTEX_SHADER);
 	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.frag", GL_FRAGMENT_SHADER);
 	m_shader_cubeDiagonal.Link();
+
+	m_shader_trajectory.Init();
+	m_shader_trajectory.AttachShader("./shaders/trajectory.vert", GL_VERTEX_SHADER);
+	m_shader_trajectory.AttachShader("./shaders/trajectory.frag", GL_FRAGMENT_SHADER);
+	m_shader_trajectory.Link();
 
 	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
     m_UBO_Matrices.BindBufferBaseToBindingPoint(0);

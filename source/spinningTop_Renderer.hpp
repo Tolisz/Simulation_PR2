@@ -55,4 +55,8 @@ private:
 	// Cube's diagonal
 	shader m_shader_cubeDiagonal;
 	
+	// Trajectory
+	shader m_shader_trajectory;
+	GLuint m_trajectoryVertexArray;
+	GLuint m_trajectoryPointsBuffer;
 };
