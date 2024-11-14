@@ -255,7 +255,7 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 	
 	float currentTilt = glm::degrees(simulationParams->m_cubeTilt);
 	ImGui::SetNextItemWidth(itemWidth);
-	if (ImGui::DragFloat("Cube's tilt", &currentTilt, 0.2f, 0.0f, 90.0f, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::DragFloat("Cube's tilt", &currentTilt, 0.2f, 0.0f, 180.0f, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
 	{
 		simulationParams->m_cubeTilt = glm::radians(currentTilt);
 	}

@@ -1,6 +1,8 @@
 #include "simulationThread.hpp"
 
 #include <iostream>
+// #define GLM_ENABLE_EXPERIMENTAL
+// #include <glm/gtx/norm.hpp>
 
 simulationThread::simulationThread()
 {
@@ -125,21 +127,22 @@ std::pair<glm::vec3, glm::quat> simulationThread::RK4()
 	// First Equation
 	glm::vec3 N = b_ApplyForce ? ComputeBodyTorque() : glm::vec3(0.0f);
 
-	// std::cout << "(" << N.x << "," << N.y << "," << N.z << ")" << std::endl; 
-
 	glm::vec3 k1_W = Derivative_W(m_W, m_I, m_invI, N);
 	glm::vec3 k2_W = Derivative_W(m_W + k1_W * (m_dt / 2.0f), m_I, m_invI, N);
 	glm::vec3 k3_W = Derivative_W(m_W + k2_W * (m_dt / 2.0f), m_I, m_invI, N);
 	glm::vec3 k4_W = Derivative_W(m_W + k3_W * m_dt, m_I, m_invI, N);
+	
 	glm::vec3 dW = (k1_W + 2.0f * k2_W + 2.0f * k3_W + k4_W) * (m_dt / 6.0f);
-	newValues.first = m_W + dW;
+	glm::vec3 W = m_W + dW;
+	newValues.first = W;
 
 	// Second Equation
-	glm::quat k1_Q = Derivative_Q(m_Q, m_W);
-	glm::quat k2_Q = Derivative_Q(m_Q + k1_Q * (m_dt / 2.0f), m_W);
-	glm::quat k3_Q = Derivative_Q(m_Q + k2_Q * (m_dt / 2.0f), m_W);
-	glm::quat k4_Q = Derivative_Q(m_Q + k3_Q * m_dt, m_W);
-	glm::quat dQ = (k1_Q + 2.0f * k2_Q + 2.0f * k3_Q + k4_Q) * (m_dt / 6.0f);
+	glm::quat k1_Q = Derivative_Q(m_Q, W);
+	glm::quat k2_Q = Derivative_Q(m_Q + k1_Q * (m_dt / 2.0f), W);
+	glm::quat k3_Q = Derivative_Q(m_Q + k2_Q * (m_dt / 2.0f), W);
+	glm::quat k4_Q = Derivative_Q(m_Q + k3_Q * m_dt, W);
+
+	glm::quat dQ = (k1_Q + 2.0f * k2_Q + 2.0f * k3_Q + k4_Q) * (m_dt / 12.0f);
 	newValues.second = glm::normalize(m_Q + dQ); 
 
 	return newValues;
@@ -166,11 +169,6 @@ glm::vec3 simulationThread::ComputeBodyTorque()
 
 glm::vec3 simulationThread::ComputeCenterOfMass()
 {
-	// glm::quat p = glm::quat(0.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
-	// glm::vec3 v = glm::axis(m_Q * p * glm::conjugate(m_Q));
-
-	// return 0.5f * m_diag * v;
-
 	glm::vec3 C = glm::vec3(0.0f, 0.5f * m_diag, 0.0f);
 	return  m_Q * C;
 }
