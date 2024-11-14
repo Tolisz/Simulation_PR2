@@ -67,6 +67,16 @@ void simulationParametersSet::PrepareSimulationParameters()
 	params.b_Gravity 				= true;
 
 	RegisterParameters(params, "Pendulum");
+
+	// spinning top
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(30.0f);
+	params.m_cubeAngularVelocity 	= 10.0f * glm::pi<float>();
+	params.m_delta 					= 0.01f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Spinning Top");
 }
 
 void simulationParametersSet::RegisterParameters(

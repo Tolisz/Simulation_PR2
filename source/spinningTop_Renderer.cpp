@@ -7,7 +7,8 @@ spinningTop_Renderer::spinningTop_Renderer()
 {
 	SetUpFramebuffer();
 	SetUpScene();
-
+	
+	m_trajBuffer = std::make_shared<trajectoryBuffer>();
 }
 
 spinningTop_Renderer::~spinningTop_Renderer()
@@ -62,11 +63,11 @@ void spinningTop_Renderer::Render(
 
 	if (drawParams->b_drawTrajectory)
 	{
-		m_shader_trajectory.Use();
-		m_shader_trajectory.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
+		m_shader_traj.Use();
+		m_shader_traj.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
 
 		glPointSize(3.0f);
-		glBindVertexArray(m_trajectoryVertexArray);
+		glBindVertexArray(m_trajVertexArray);
 		glDrawArrays(GL_POINTS, 0, 3);
 		glPointSize(1.0f);
 	}
@@ -104,6 +105,11 @@ void spinningTop_Renderer::UpdateCameraRotation(float rotX, float rotY)
 void spinningTop_Renderer::UpdateCameraPosition(float delta)
 {
 	m_camera.UpdatePosition(delta);
+}
+
+std::shared_ptr<trajectoryBuffer> spinningTop_Renderer::GetTrajectoryBuffer()
+{
+	return m_trajBuffer;
 }
 
 void spinningTop_Renderer::SetUpFramebuffer()
@@ -145,10 +151,10 @@ void spinningTop_Renderer::SetUpScene()
         -1.0f, -1.0f, 0.0f,  // bottom left
          1.0f,  1.0f, 0.0f,  // top 
     };
-	glGenVertexArrays(1, &m_trajectoryVertexArray);
-    glGenBuffers(1, &m_trajectoryPointsBuffer);
-    glBindVertexArray(m_trajectoryVertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, m_trajectoryPointsBuffer);
+	glGenVertexArrays(1, &m_trajVertexArray);
+    glGenBuffers(1, &m_trajArrayBuffer);
+    glBindVertexArray(m_trajVertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -167,10 +173,10 @@ void spinningTop_Renderer::PrepareShaders()
 	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.frag", GL_FRAGMENT_SHADER);
 	m_shader_cubeDiagonal.Link();
 
-	m_shader_trajectory.Init();
-	m_shader_trajectory.AttachShader("./shaders/trajectory.vert", GL_VERTEX_SHADER);
-	m_shader_trajectory.AttachShader("./shaders/trajectory.frag", GL_FRAGMENT_SHADER);
-	m_shader_trajectory.Link();
+	m_shader_traj.Init();
+	m_shader_traj.AttachShader("./shaders/trajectory.vert", GL_VERTEX_SHADER);
+	m_shader_traj.AttachShader("./shaders/trajectory.frag", GL_FRAGMENT_SHADER);
+	m_shader_traj.Link();
 
 	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
     m_UBO_Matrices.BindBufferBaseToBindingPoint(0);

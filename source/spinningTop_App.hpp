@@ -40,6 +40,8 @@ public:
 	int GetPresetID();
 	void ResetPreset();
 
+	void SetNewTrajectoryBufferSize(std::size_t newSize);
+
 private:
 
 	simulationDrawParameters GetStartSimulationDrawParams();

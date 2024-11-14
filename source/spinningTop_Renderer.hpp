@@ -9,6 +9,8 @@
 #include "obj_cube.hpp"
 #include "drawParameters.hpp"
 #include "simulationParameters.hpp"
+#include "trajectoryBuffer.hpp"
+
 
 class spinningTop_Renderer
 {
@@ -30,6 +32,9 @@ public:
 	void UpdateRenderArea(int width, int height);
 	void UpdateCameraRotation(float rotX, float rotY);
 	void UpdateCameraPosition(float delta);
+
+	std::shared_ptr<trajectoryBuffer> GetTrajectoryBuffer();
+	
 private:
 
 	void SetUpFramebuffer(); 
@@ -56,7 +61,9 @@ private:
 	shader m_shader_cubeDiagonal;
 	
 	// Trajectory
-	shader m_shader_trajectory;
-	GLuint m_trajectoryVertexArray;
-	GLuint m_trajectoryPointsBuffer;
+	shader m_shader_traj;
+	GLuint m_trajVertexArray;
+	GLuint m_trajArrayBuffer;
+
+	std::shared_ptr<trajectoryBuffer> m_trajBuffer;
 };
