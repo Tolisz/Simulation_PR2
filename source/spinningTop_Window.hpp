@@ -73,5 +73,8 @@ private:
     glm::vec2   m_lastMousePos      = {0, 0};
     float       m_cameraSpeed       = 0.01f;
     
+    static const char* c_angleTypes[];
+    int m_selectedAngVelAngleType = 0;
+
     std::unique_ptr<spinningTop_App> m_app;
 };

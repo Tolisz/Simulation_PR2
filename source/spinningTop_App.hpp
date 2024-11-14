@@ -1,6 +1,7 @@
 #pragma once
 
 #include "simulationParameters.hpp"
+#include "simulationParametersSet.hpp"
 #include "drawParameters.hpp"
 #include "spinningTop_Renderer.hpp"
 #include "simulationThread.hpp"
@@ -34,6 +35,11 @@ public:
 	void UpdateCameraRotation(float rotX, float rotY);
 	void ApplyForce();
 
+	std::vector<std::string> GetPresets();
+	void SetPresetID(const int& newID);
+	int GetPresetID();
+	void ResetPreset();
+
 private:
 
 	simulationDrawParameters GetStartSimulationDrawParams();
@@ -43,6 +49,8 @@ private:
 
 	std::shared_ptr<simulationParameters> 	m_paramsSimulation;
 	std::shared_ptr<drawParameters> 		m_paramsDraw;
+
+	std::unique_ptr<simulationParametersSet> m_paramsSet;
 
 	enum class State
 	{

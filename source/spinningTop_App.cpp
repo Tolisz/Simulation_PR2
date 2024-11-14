@@ -9,6 +9,9 @@ spinningTop_App::spinningTop_App()
 
 	m_renderer 		= std::make_unique<spinningTop_Renderer>();
 	m_simThread		= std::make_unique<simulationThread>();
+
+	m_paramsSet 	= std::make_unique<simulationParametersSet>();
+	SetPresetID(0);
 }
 
 spinningTop_App::~spinningTop_App()
@@ -123,6 +126,30 @@ void spinningTop_App::ApplyForce()
 {
 	m_simThread->ApplyForce(m_paramsSimulation->b_Gravity);
 }
+
+std::vector<std::string> spinningTop_App::GetPresets()
+{
+	return m_paramsSet->GetDescriptions();
+}
+
+void spinningTop_App::SetPresetID(const int& newID)
+{
+	m_paramsSet->SetCurrentID(newID);
+	simulationParameters params = m_paramsSet->GetParametersByID(newID);
+	*m_paramsSimulation = params;
+	
+	ApplyForce();
+}
+
+int spinningTop_App::GetPresetID()
+{
+	return m_paramsSet->GetCurrentID();
+}
+
+void spinningTop_App::ResetPreset()
+{
+	SetPresetID(GetPresetID());
+}	
 
 simulationDrawParameters spinningTop_App::GetStartSimulationDrawParams()
 {

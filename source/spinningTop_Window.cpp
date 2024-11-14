@@ -4,7 +4,13 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
+#include <format>
 #include <iostream>
+
+/* static */ const char* spinningTop_Window::c_angleTypes[] = {
+	"deg",
+	"rad"
+};
 
 /* virtual */ void spinningTop_Window::RunInit() /* override */
 {
@@ -154,7 +160,7 @@ void spinningTop_Window::GUI_Main()
 	GUI_WindowLayout();
 
 	// DEBUG ONLY !!!!!!!!!!!!
-	static bool show_demo_window = false;
+	static bool show_demo_window = true;
 	if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 }
@@ -184,6 +190,8 @@ void spinningTop_Window::GUI_WindowLayout()
 	ImGui::End();
 
 	// Settings Window
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
 	if (ImGui::Begin(c_windowNameSettings.data())) 
 	{
 		GUI_WindowSettings();
@@ -197,7 +205,7 @@ void spinningTop_Window::GUI_WindowLayout()
 		GUI_WindowRender();
 	}
 	ImGui::End();
-	ImGui::PopStyleVar(1);
+	ImGui::PopStyleVar(2);
 
 	// Update Docking if necessary.
 	if (!b_dockingInitialized)
@@ -244,10 +252,52 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 	bool simulationStarted = m_app->IsRunning() || m_app->IsStopped();
 
 	ImGui::SeparatorText("Simulation Options");	
-	float itemWidth = ImGui::GetWindowWidth() * 0.6f;
 
 	ImGui::BeginDisabled(simulationStarted);
 
+	float win_width = ImGui::GetWindowWidth();
+	float padding = ImGui::GetStyle().WindowPadding.x;
+	float spacing = ImGui::GetStyle().ItemSpacing.x;
+	float buttonWidth = (win_width - 2 * padding - 2 * spacing) / 3.0f;
+	ImVec2 buttonSize{buttonWidth, 0.0f};
+
+	ImGuiStyle previousStyle = ImGui::GetStyle();
+	ImGui::GetStyle().FramePadding = ImVec2(4.0f, 6.0f);
+
+	if (ImGui::Button("RESET OPTIONS", buttonSize))
+	{
+		m_app->ResetPreset();
+	}
+
+	ImGui::SameLine();
+	
+	std::vector<std::string> presetsNames = m_app->GetPresets();
+	int presetID = m_app->GetPresetID();
+	std::string preview = " PRESET:  " + presetsNames[presetID];
+
+	ImGui::SetNextItemWidth(2.0f * buttonWidth + spacing);
+	if (ImGui::BeginCombo("##Preset", preview.data(), ImGuiComboFlags_HeightLargest))
+	{
+		for (int n = 0; n < presetsNames.size(); n++)
+		{
+			bool isSelected = (presetID == n);
+			if (ImGui::Selectable(presetsNames[n].data(), isSelected)) 
+			{
+				m_app->SetPresetID(n);
+			}
+
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::GetStyle() = previousStyle;
+
+	ImGui::Spacing();
+
+	float itemWidth = win_width * 0.6f;
+	
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::DragFloat("Cube's edge length", &simulationParams->m_cubeEdgeLength, 0.01f, 0.01f, FLT_MAX, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::SetNextItemWidth(itemWidth);
@@ -255,17 +305,46 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 	
 	float currentTilt = glm::degrees(simulationParams->m_cubeTilt);
 	ImGui::SetNextItemWidth(itemWidth);
-	if (ImGui::DragFloat("Cube's tilt", &currentTilt, 0.2f, 0.0f, 180.0f, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::DragFloat("Cube's tilt", &currentTilt, 0.6f, 0.0f, 180.0f, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
 	{
 		simulationParams->m_cubeTilt = glm::radians(currentTilt);
 	}
 
-	float currentVelocity = glm::degrees(simulationParams->m_cubeAngularVelocity);
-	ImGui::SetNextItemWidth(itemWidth);
-	if (ImGui::DragFloat("Cube's angular velocity", &currentVelocity, 0.5f, 0.0f, FLT_MAX, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
+	ImGui::SetNextItemWidth(itemWidth * 0.8f - spacing);
+	if (m_selectedAngVelAngleType == 0)
 	{
-		simulationParams->m_cubeAngularVelocity = glm::radians(currentVelocity);
+		float currentVelocity = glm::degrees(simulationParams->m_cubeAngularVelocity);
+		if (ImGui::DragFloat("##Angular velocity", &currentVelocity, 5.0f, 0.0f, FLT_MAX, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+		{
+			simulationParams->m_cubeAngularVelocity = glm::radians(currentVelocity);
+		}
 	}
+	else if (m_selectedAngVelAngleType == 1) 
+	{
+		float radPerPi = simulationParams->m_cubeAngularVelocity / glm::pi<float>();
+		std::string format = "%.2f  " + std::format("({0:.2f} * pi)", radPerPi);
+
+		ImGui::DragFloat("##Angular velocity", &simulationParams->m_cubeAngularVelocity, 0.1f, 0.0f, FLT_MAX, format.data(), ImGuiSliderFlags_AlwaysClamp);
+	}
+	
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(itemWidth * 0.2f);
+	if (ImGui::BeginCombo("##Angular velocity Combo", c_angleTypes[m_selectedAngVelAngleType]))
+	{
+		for (int n = 0; n < 2; n++)
+		{
+			bool isSelected = (m_selectedAngVelAngleType == n);
+			if (ImGui::Selectable(c_angleTypes[n], isSelected)) 
+				m_selectedAngVelAngleType = n;
+
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	
+	ImGui::SameLine(itemWidth + 1.5f * spacing);
+	ImGui::Text("Cube's angular velocity");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::DragFloat("simulation step", &simulationParams->m_delta, 0.001f, 0.01f, 0.1f, "%.4f");
