@@ -4,9 +4,10 @@
 // #define GLM_ENABLE_EXPERIMENTAL
 // #include <glm/gtx/norm.hpp>
 
-simulationThread::simulationThread()
+simulationThread::simulationThread(std::shared_ptr<trajectoryBuffer> buffer)
+	:m_trajectoryBuffer{buffer}
 {
-
+	
 }
 
 simulationThread::~simulationThread()
@@ -95,6 +96,7 @@ void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationP
 	m_W = glm::vec3(0.0f, params->m_cubeAngularVelocity, 0.0f);
 
 	m_diag = a * glm::sqrt(3);
+	m_cornerPoint = glm::vec3(0.0f, m_diag, 0.0f);
 	m_dt = params->m_delta;
 }
 
@@ -116,6 +118,10 @@ void simulationThread::SimulationThread()
 		m_Q = nextValues.second;
 		m_blockWQRead.unlock();
 
+		m_trajectoryBuffer->Lock();
+		m_trajectoryBuffer->PutPoint(nextValues.second * m_cornerPoint);
+		m_trajectoryBuffer->Unlock();
+		
 		std::this_thread::sleep_for(std::chrono::duration<double>(m_dt));
 	}
 }

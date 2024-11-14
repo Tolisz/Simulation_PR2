@@ -113,9 +113,16 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 
 void trajectoryBuffer::PutPoint(const glm::vec3& point)
 {
-	m_buffer[m_WritePos] = point;
-	m_WritePos += 1;
-	m_WritePos %= m_buffer.size();
+	if (m_buffer.size() < m_buffer.capacity())
+	{
+		m_buffer.push_back(point);
+		m_WritePos += 1;
+	}
+	else {
+		m_buffer[m_WritePos] = point;
+		m_WritePos += 1;
+		m_WritePos %= m_buffer.size();
+	}
 }
 
 void trajectoryBuffer::Lock()
@@ -126,4 +133,21 @@ void trajectoryBuffer::Lock()
 void trajectoryBuffer::Unlock()
 {
 	m_bufferAccess.unlock();
+}
+
+std::size_t trajectoryBuffer::Capacity()
+{
+	return m_buffer.capacity();
+}
+
+std::size_t trajectoryBuffer::Size()
+{
+	return m_buffer.size();
+}
+
+void* trajectoryBuffer::GetDataFrom(int pos)
+{
+	glm::vec3* start = m_buffer.data();
+	start += pos;
+	return static_cast<void*>(start);
 }

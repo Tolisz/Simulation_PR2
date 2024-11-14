@@ -17,6 +17,10 @@ public:
 	void Lock();
 	void Unlock();
 
+	std::size_t Capacity();
+	std::size_t Size();
+	void* GetDataFrom(int pos);
+
 private:
 
 	std::mutex m_bufferAccess;

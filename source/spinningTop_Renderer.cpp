@@ -68,7 +68,7 @@ void spinningTop_Renderer::Render(
 
 		glPointSize(3.0f);
 		glBindVertexArray(m_trajVertexArray);
-		glDrawArrays(GL_POINTS, 0, 3);
+		glDrawArrays(GL_POINTS, 0, m_trajBuffer->Size());
 		glPointSize(1.0f);
 	}
 
@@ -110,6 +110,18 @@ void spinningTop_Renderer::UpdateCameraPosition(float delta)
 std::shared_ptr<trajectoryBuffer> spinningTop_Renderer::GetTrajectoryBuffer()
 {
 	return m_trajBuffer;
+}
+
+void spinningTop_Renderer::UpdateGPUTrajectoryBuffer()
+{
+	size_t gpuBuffSize = sizeof(glm::vec3) * m_trajBuffer->Capacity();
+	size_t writeSize = sizeof(glm::vec3) * m_trajBuffer->Size();
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+	glBufferData(GL_ARRAY_BUFFER, gpuBuffSize, nullptr, GL_DYNAMIC_DRAW);
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(0));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void spinningTop_Renderer::SetUpFramebuffer()

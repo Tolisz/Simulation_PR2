@@ -34,6 +34,7 @@ public:
 	void UpdateCameraPosition(float delta);
 
 	std::shared_ptr<trajectoryBuffer> GetTrajectoryBuffer();
+	void UpdateGPUTrajectoryBuffer();
 	
 private:
 

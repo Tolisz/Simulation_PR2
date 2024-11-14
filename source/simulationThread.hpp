@@ -7,12 +7,13 @@
 #include <semaphore>
 
 #include "simulationParameters.hpp"
+#include "trajectoryBuffer.hpp"
 
 class simulationThread
 {
 public:
 
-	simulationThread();
+	simulationThread(std::shared_ptr<trajectoryBuffer> buffer);
 	~simulationThread();
 
 	simulationThread(const simulationThread&) = delete;
@@ -62,4 +63,6 @@ private:
 	glm::quat m_Q;
 	glm::vec3 m_W;
 
+	glm::vec3 m_cornerPoint;
+	std::shared_ptr<trajectoryBuffer> m_trajectoryBuffer;
 };

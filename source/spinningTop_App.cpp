@@ -8,8 +8,10 @@ spinningTop_App::spinningTop_App()
 	m_paramsDraw 		= std::make_shared<drawParameters>();
 
 	m_renderer 		= std::make_unique<spinningTop_Renderer>();
-	m_simThread		= std::make_unique<simulationThread>();
-	SetNewTrajectoryBufferSize(m_paramsDraw->m_trajectoryPointsNum);
+	m_simThread		= std::make_unique<simulationThread>( m_renderer->GetTrajectoryBuffer() );
+	
+	auto buffer = m_renderer->GetTrajectoryBuffer();
+	buffer->ReallocateMemory(m_paramsDraw->m_trajectoryPointsNum);
 
 	m_paramsSet 	= std::make_unique<simulationParametersSet>();
 	SetPresetID(0);
@@ -157,7 +159,8 @@ void spinningTop_App::SetNewTrajectoryBufferSize(std::size_t newSize)
 	auto buffer = m_renderer->GetTrajectoryBuffer();
 	
 	buffer->Lock();
-	buffer->ReallocateMemory(newSize);
+	// buffer->ReallocateMemory(newSize);
+	m_renderer->UpdateGPUTrajectoryBuffer();
 	buffer->Unlock();
 }
 
