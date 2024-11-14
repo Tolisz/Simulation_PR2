@@ -34,10 +34,10 @@ private:
 	// Thread functions
 	void SimulationThread();
 	std::pair<glm::vec3, glm::quat> RK4();
-	glm::vec3 Derivative_W(const glm::vec3& N, const glm::vec3& W);
+	glm::vec3 Derivative_W(const glm::vec3& W, const glm::mat3& I, const glm::mat3& invI, const glm::vec3& N);
 	glm::quat Derivative_Q(const glm::quat& Q, const glm::vec3& W);
 	glm::vec3 ComputeBodyTorque();
-	glm::vec3 FindCenterOfMass();
+	glm::vec3 ComputeCenterOfMass();
 	// ================
 
 private:
@@ -53,8 +53,8 @@ private:
 	glm::mat3 m_I;
 	glm::mat3 m_invI;
 	glm::vec3 m_f;
-	float m_d; // diagonal Length
-	float m_h;
+	float m_diag; // diagonal Length
+	float m_dt;
 
 	std::mutex			m_blockWQRead;
 	glm::quat m_Q;

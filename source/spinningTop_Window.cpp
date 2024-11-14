@@ -241,10 +241,13 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 void spinningTop_Window::GUI_SEC_SimulationOptions()
 {
 	std::shared_ptr<simulationParameters> simulationParams = m_app->GetSimulationParameters();
-	
+	bool simulationStarted = m_app->IsRunning() || m_app->IsStopped();
+
 	ImGui::SeparatorText("Simulation Options");	
 	float itemWidth = ImGui::GetWindowWidth() * 0.6f;
-	
+
+	ImGui::BeginDisabled(simulationStarted);
+
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::DragFloat("Cube's edge length", &simulationParams->m_cubeEdgeLength, 0.01f, 0.01f, FLT_MAX, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::SetNextItemWidth(itemWidth);
@@ -259,13 +262,15 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 
 	float currentVelocity = glm::degrees(simulationParams->m_cubeAngularVelocity);
 	ImGui::SetNextItemWidth(itemWidth);
-		if (ImGui::DragFloat("Cube's angular velocity", &currentVelocity, 0.5f, 0.0f, FLT_MAX, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::DragFloat("Cube's angular velocity", &currentVelocity, 0.5f, 0.0f, FLT_MAX, "%.2f deg", ImGuiSliderFlags_AlwaysClamp))
 	{
 		simulationParams->m_cubeAngularVelocity = glm::radians(currentVelocity);
 	}
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::DragFloat("simulation step", &simulationParams->m_delta, 0.001f, 0.01f, 0.1f, "%.4f");
+	
+	ImGui::EndDisabled();
 }
 
 void spinningTop_Window::GUI_SEC_SimulationActions()

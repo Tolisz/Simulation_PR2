@@ -68,9 +68,9 @@ void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationP
 	float a = params->m_cubeEdgeLength;
 	float ro = params->m_cubeDensity;
 	m_I = glm::mat3(
-		(11.0f / 5.0f) * glm::pow(a, 5) * ro, 0, 0,
+		(11.0f / 12.0f) * glm::pow(a, 5) * ro, 0, 0,
 		0, (glm::pow(a, 5) * ro) / 6.0f, 0,
-		0, 0, (11.0f / 5.0f) * glm::pow(a, 5) * ro
+		0, 0, (11.0f / 12.0f) * glm::pow(a, 5) * ro
 	);
 
 	m_invI = glm::mat3(
@@ -81,15 +81,13 @@ void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationP
 
 	float V = a * a * a;
 	float m = ro * V;
-	m_f = glm::vec3(0.0f, - m * 9.8f, 0.0f);
+	m_f = m * glm::vec3(0.0f, - 100.8f, 0.0f);
 	
 	m_Q = glm::angleAxis(params->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
 	m_W = glm::vec3(0.0f, params->m_cubeAngularVelocity, 0.0f);
 
-
-
-	m_d = a * glm::sqrt(3);
-	m_h = params->m_delta;
+	m_diag = a * glm::sqrt(3);
+	m_dt = params->m_delta;
 }
 
 void simulationThread::SimulationThread()
@@ -110,8 +108,7 @@ void simulationThread::SimulationThread()
 		m_Q = nextValues.second;
 		m_blockWQRead.unlock();
 
-		std::this_thread::sleep_for(std::chrono::duration<double>(m_h));
-		// std::cout << "Jestem" << std::endl;
+		std::this_thread::sleep_for(std::chrono::duration<double>(m_dt));
 	}
 }
 
@@ -121,31 +118,28 @@ std::pair<glm::vec3, glm::quat> simulationThread::RK4()
 
 	// First Equation
 	glm::vec3 N = ComputeBodyTorque();
-	{
-		glm::vec3 k1 = m_h * Derivative_W(N, m_W);
-		glm::vec3 k2 = m_h * Derivative_W(N, (m_W + k1 / 2.0f));
-		glm::vec3 k3 = m_h * Derivative_W(N, (m_W + k2 / 2.0f));
-		glm::vec3 k4 = m_h * Derivative_W(N, (m_W + k3));
-		glm::vec3 dW = (k1 + 2.0f * k2 + 2.0f * k3 + k4) / 6.0f;
-		newValues.first = m_W + dW;
-	}
+	
+	glm::vec3 k1_W = Derivative_W(m_W, m_I, m_invI, N);
+	glm::vec3 k2_W = Derivative_W(m_W + k1_W * (m_dt / 2.0f), m_I, m_invI, N);
+	glm::vec3 k3_W = Derivative_W(m_W + k2_W * (m_dt / 2.0f), m_I, m_invI, N);
+	glm::vec3 k4_W = Derivative_W(m_W + k3_W * m_dt, m_I, m_invI, N);
+	glm::vec3 dW = (k1_W + 2.0f * k2_W + 2.0f * k3_W + k4_W) * (m_dt / 6.0f);
+	newValues.first = m_W + dW;
 
 	// Second Equation
-	{
-		glm::quat k1 = m_h * Derivative_Q(m_Q, m_W);
-		glm::quat k2 = m_h * Derivative_Q(m_Q + k1 / 2.0f, m_W);
-		glm::quat k3 = m_h * Derivative_Q(m_Q + k2 / 2.0f, m_W);
-		glm::quat k4 = m_h * Derivative_Q(m_Q + k3, m_W);
-		glm::quat dQ = (k1 + 2.0f * k2 + 2.0f * k3 + k4) / 6.0f;
-		newValues.second = m_Q + dQ; 
-	}
+	glm::quat k1_Q = Derivative_Q(m_Q, m_W);
+	glm::quat k2_Q = Derivative_Q(m_Q + k1_Q * (m_dt / 2.0f), m_W);
+	glm::quat k3_Q = Derivative_Q(m_Q + k2_Q * (m_dt / 2.0f), m_W);
+	glm::quat k4_Q = Derivative_Q(m_Q + k3_Q * m_dt, m_W);
+	glm::quat dQ = (k1_Q + 2.0f * k2_Q + 2.0f * k3_Q + k4_Q) * (m_dt / 6.0f);
+	newValues.second = glm::normalize(m_Q + dQ); 
 
 	return newValues;
 }
 
-glm::vec3 simulationThread::Derivative_W(const glm::vec3& N, const glm::vec3& W)
+glm::vec3 simulationThread::Derivative_W(const glm::vec3& W, const glm::mat3& I, const glm::mat3& invI, const glm::vec3& N)
 {
-	return m_invI * (N + glm::cross((m_I * W), W));
+	return invI * (N + glm::cross(I * W, W));
 }
 
 glm::quat simulationThread::Derivative_Q(const glm::quat& Q, const glm::vec3& W)
@@ -156,17 +150,17 @@ glm::quat simulationThread::Derivative_Q(const glm::quat& Q, const glm::vec3& W)
 
 glm::vec3 simulationThread::ComputeBodyTorque()
 {
-	glm::vec3 r = FindCenterOfMass();
+	glm::vec3 r = ComputeCenterOfMass();
 	glm::vec3 n = glm::cross(r, m_f);
-	glm::quat p = glm::quat(0.0f, n);
+	glm::quat p = glm::quat(0.0f, n.x, n.y, n.z);
 
 	return glm::axis(m_Q * p * glm::conjugate(m_Q));
 }
 
-glm::vec3 simulationThread::FindCenterOfMass()
+glm::vec3 simulationThread::ComputeCenterOfMass()
 {
 	glm::quat p = glm::quat(0.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
 	glm::vec3 v = glm::axis(m_Q * p * glm::conjugate(m_Q));
 
-	return 0.5f * m_d * v;
+	return 0.5f * m_diag * v;
 }
