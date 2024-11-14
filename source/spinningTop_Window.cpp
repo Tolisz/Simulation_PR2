@@ -271,6 +271,11 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 	ImGui::DragFloat("simulation step", &simulationParams->m_delta, 0.001f, 0.01f, 0.1f, "%.4f");
 	
 	ImGui::EndDisabled();
+
+	if (ImGui::Checkbox("Apply Gravity Force", &simulationParams->b_Gravity)) 
+	{
+		m_app->ApplyForce();
+	}
 }
 
 void spinningTop_Window::GUI_SEC_SimulationActions()

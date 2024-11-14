@@ -26,6 +26,7 @@ public:
 	void EndSimulation();
 
 	glm::quat GetRotation();
+	void ApplyForce(bool apply);
 
 private:
 
@@ -53,6 +54,7 @@ private:
 	glm::mat3 m_I;
 	glm::mat3 m_invI;
 	glm::vec3 m_f;
+	std::atomic_bool b_ApplyForce = true;
 	float m_diag; // diagonal Length
 	float m_dt;
 

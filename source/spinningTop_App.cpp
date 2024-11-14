@@ -119,6 +119,11 @@ void spinningTop_App::UpdateCameraRotation(float rotX, float rotY)
 	m_renderer->UpdateCameraRotation(rotX, rotY);
 }
 
+void spinningTop_App::ApplyForce()
+{
+	m_simThread->ApplyForce(m_paramsSimulation->b_Gravity);
+}
+
 simulationDrawParameters spinningTop_App::GetStartSimulationDrawParams()
 {
 	simulationDrawParameters params;

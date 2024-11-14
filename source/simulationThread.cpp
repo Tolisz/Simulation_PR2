@@ -63,10 +63,16 @@ glm::quat simulationThread::GetRotation()
 	return currentRotation;
 }
 
+void simulationThread::ApplyForce(bool apply)
+{
+	b_ApplyForce = apply;
+}
+
 void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationParameters> params)
 {
 	float a = params->m_cubeEdgeLength;
 	float ro = params->m_cubeDensity;
+
 	m_I = glm::mat3(
 		(11.0f / 12.0f) * glm::pow(a, 5) * ro, 0, 0,
 		0, (glm::pow(a, 5) * ro) / 6.0f, 0,
@@ -81,7 +87,7 @@ void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationP
 
 	float V = a * a * a;
 	float m = ro * V;
-	m_f = m * glm::vec3(0.0f, - 100.8f, 0.0f);
+	m_f = m * glm::vec3(0.0f, -9.8f, 0.0f);
 	
 	m_Q = glm::angleAxis(params->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
 	m_W = glm::vec3(0.0f, params->m_cubeAngularVelocity, 0.0f);
@@ -117,8 +123,10 @@ std::pair<glm::vec3, glm::quat> simulationThread::RK4()
 	std::pair<glm::vec3, glm::quat> newValues;
 
 	// First Equation
-	glm::vec3 N = ComputeBodyTorque();
-	
+	glm::vec3 N = b_ApplyForce ? ComputeBodyTorque() : glm::vec3(0.0f);
+
+	// std::cout << "(" << N.x << "," << N.y << "," << N.z << ")" << std::endl; 
+
 	glm::vec3 k1_W = Derivative_W(m_W, m_I, m_invI, N);
 	glm::vec3 k2_W = Derivative_W(m_W + k1_W * (m_dt / 2.0f), m_I, m_invI, N);
 	glm::vec3 k3_W = Derivative_W(m_W + k2_W * (m_dt / 2.0f), m_I, m_invI, N);
@@ -152,15 +160,17 @@ glm::vec3 simulationThread::ComputeBodyTorque()
 {
 	glm::vec3 r = ComputeCenterOfMass();
 	glm::vec3 n = glm::cross(r, m_f);
-	glm::quat p = glm::quat(0.0f, n.x, n.y, n.z);
 
-	return glm::axis(m_Q * p * glm::conjugate(m_Q));
+	return glm::conjugate(m_Q) * n;
 }
 
 glm::vec3 simulationThread::ComputeCenterOfMass()
 {
-	glm::quat p = glm::quat(0.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
-	glm::vec3 v = glm::axis(m_Q * p * glm::conjugate(m_Q));
+	// glm::quat p = glm::quat(0.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
+	// glm::vec3 v = glm::axis(m_Q * p * glm::conjugate(m_Q));
 
-	return 0.5f * m_diag * v;
+	// return 0.5f * m_diag * v;
+
+	glm::vec3 C = glm::vec3(0.0f, 0.5f * m_diag, 0.0f);
+	return  m_Q * C;
 }

@@ -32,7 +32,8 @@ public:
 	void SetRenderArea(int width, int height);
 	void UpdateCameraPosition(float delta);
 	void UpdateCameraRotation(float rotX, float rotY);
-	
+	void ApplyForce();
+
 private:
 
 	simulationDrawParameters GetStartSimulationDrawParams();
