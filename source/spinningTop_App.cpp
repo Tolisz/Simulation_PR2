@@ -34,7 +34,7 @@ void spinningTop_App::StartSimulation()
 	{
 	case State::Initial:
 		m_state = State::Running;
-		m_simThread->StartSimulation();
+		m_simThread->StartSimulation(m_paramsSimulation);
 		break;
 	
 	case State::Stopped:
@@ -131,13 +131,8 @@ simulationDrawParameters spinningTop_App::GetStartSimulationDrawParams()
 simulationDrawParameters spinningTop_App::GetCurrentSimulationDrawParams()
 {
 	simulationDrawParameters params;
-	
-	/*
-		Do dopisania później
-	*/
-
 	params.m_cubeEdgeLength = m_paramsSimulation->m_cubeEdgeLength;
-	params.m_Q =  glm::angleAxis(m_paramsSimulation->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
+	params.m_Q = m_simThread->GetRotation();
 	
 	return params;
 }
