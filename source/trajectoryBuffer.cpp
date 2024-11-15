@@ -1,5 +1,7 @@
 #include "trajectoryBuffer.hpp"
 
+#include <iostream>
+
 void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 {	
 	std::size_t oldCapacity = m_buffer.capacity();
@@ -27,22 +29,20 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 			auto it_end = m_buffer.begin();
 			std::advance(it_end, m_WritePos);
 
-			std::copy(it_beg, it_end, newBuffer.begin());
+			newBuffer.insert(newBuffer.end(), it_beg, it_end);
 		}
 		else // oldSize == oldCapacity
 		{
 			auto it_beg = m_buffer.begin();
 			std::advance(it_beg, m_WritePos);
 			auto it_end = m_buffer.end();
-			auto start = newBuffer.begin();
-
-			start = std::copy(it_beg, it_end, start);
+			newBuffer.insert(newBuffer.end(), it_beg, it_end);
 
 			it_beg = m_buffer.begin();
 			it_end = m_buffer.begin();
-			std::advance(it_beg, m_WritePos);
-
-			std::copy(it_beg, it_end, start);
+			std::advance(it_end, m_WritePos);
+			newBuffer.insert(newBuffer.end(), it_beg, it_end);
+			
 			m_WritePos = newBuffer.size();
 		}
 	}
@@ -56,7 +56,7 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 				auto it_end = m_buffer.begin();
 				std::advance(it_end, m_WritePos);
 				
-				std::copy(it_beg, it_end, newBuffer.begin());
+				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 			}
 			else // m_WritePos >= newCapacity
 			{
@@ -66,7 +66,7 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 				auto it_end = m_buffer.begin();
 				std::advance(it_end, m_WritePos);
 				
-				std::copy(it_beg, it_end, newBuffer.begin());
+				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 				m_WritePos = 0;
 			}
 		}
@@ -84,14 +84,14 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 				auto start = newBuffer.begin();
 				std::advance(start, backLength);
 
-				std::copy(it_beg, it_end, start);
+				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 
 				it_beg = m_buffer.begin();
 				std::advance(it_beg, to_back);
 				it_end = m_buffer.end();
 				start = newBuffer.begin();
 
-				std::copy(it_beg, it_end, start);
+				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 				m_WritePos = 0;
 			}
 			else // m_WritePos >= newCapacity
@@ -102,7 +102,7 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 				auto it_end = m_buffer.begin();
 				std::advance(it_end, m_WritePos);
 				
-				std::copy(it_beg, it_end, newBuffer.begin());
+				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 				m_WritePos = 0;
 			}
 		}

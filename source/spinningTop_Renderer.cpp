@@ -153,8 +153,9 @@ std::shared_ptr<trajectoryBuffer> spinningTop_Renderer::GetTrajectoryBuffer()
 	return m_trajBuffer;
 }
 
-void spinningTop_Renderer::UpdateGPUTrajectoryBuffer()
+void spinningTop_Renderer::ReallocateGPUTrajectoryBuffer()
 {
+	std::cout << "Reallocate" << std::endl;
 	size_t gpuBuffSize = sizeof(glm::vec3) * m_trajBuffer->Capacity();
 	size_t writeSize = sizeof(glm::vec3) * m_trajBuffer->Size();
 	m_trajDrawSize =  m_trajBuffer->Size();
@@ -163,17 +164,27 @@ void spinningTop_Renderer::UpdateGPUTrajectoryBuffer()
 	glBufferData(GL_ARRAY_BUFFER, gpuBuffSize, nullptr, GL_DYNAMIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(0));
+
+	b_trajGPUbufferAllocated = true;
 }
 
-void spinningTop_Renderer::ClearGPUTrajectoryBuffer()
+void spinningTop_Renderer::FreeGPUTrajectoryBuffer()
 {
+	std::cout << "Free" << std::endl;
 	m_trajDrawSize = 0;
 	m_trajGPUPos = 0;
 	b_trajDrawDifferently = false;
 
-	// We do not care what inside GPU buffer after reset, just don't drow it.
-
+	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+	b_trajGPUbufferAllocated = false;
+	
 	m_trajBuffer->Reset();
+}
+
+bool spinningTop_Renderer::IsGPUTrajectoryBufferAllocated()
+{
+	return b_trajGPUbufferAllocated;
 }
 
 void spinningTop_Renderer::SyncGPUTrajectoryBuffer()

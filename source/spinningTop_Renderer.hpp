@@ -34,8 +34,9 @@ public:
 	void UpdateCameraPosition(float delta);
 
 	std::shared_ptr<trajectoryBuffer> GetTrajectoryBuffer();
-	void UpdateGPUTrajectoryBuffer();
-	void ClearGPUTrajectoryBuffer();
+	void ReallocateGPUTrajectoryBuffer();
+	void FreeGPUTrajectoryBuffer();
+	bool IsGPUTrajectoryBufferAllocated();
 
 private:
 
@@ -70,7 +71,9 @@ private:
 	GLuint m_trajVertexArray;
 	GLuint m_LastLineVertexArray;
 	GLuint m_LastLineElements;
+
 	GLuint m_trajArrayBuffer;
+	bool b_trajGPUbufferAllocated;
 
 	std::shared_ptr<trajectoryBuffer> m_trajBuffer;
 	int m_trajGPUPos = 0;
