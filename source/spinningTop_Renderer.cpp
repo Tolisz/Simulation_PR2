@@ -10,6 +10,9 @@ spinningTop_Renderer::spinningTop_Renderer()
 	SetUpScene();
 	
 	m_trajBuffer = std::make_shared<trajectoryBuffer>();
+
+	m_camera.m_worldPos = glm::vec3(0.0f, 0.0f, 6.0f);
+	m_camera.UpdateRotation(glm::radians(40.0f), -glm::radians(40.0f));
 }
 
 spinningTop_Renderer::~spinningTop_Renderer()

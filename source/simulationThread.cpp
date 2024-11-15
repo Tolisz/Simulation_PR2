@@ -111,6 +111,8 @@ void simulationThread::SimulationThread()
 		}
 		m_blockSimulation.unlock();
 
+		auto start = std::chrono::high_resolution_clock::now();
+
 		std::pair<glm::vec3, glm::quat> nextValues = RK4();
 
 		m_blockWQRead.lock();
@@ -122,7 +124,15 @@ void simulationThread::SimulationThread()
 		m_trajectoryBuffer->PutPoint(nextValues.second * m_cornerPoint);
 		m_trajectoryBuffer->Unlock();
 		
-		std::this_thread::sleep_for(std::chrono::duration<double>(m_dt));
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> duration = end - start;
+
+		if (duration.count() < m_dt)
+		{
+			std::this_thread::sleep_for(std::chrono::duration<double>(
+				m_dt - duration.count()
+			));
+		}
 	}
 }
 
