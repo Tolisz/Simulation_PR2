@@ -63,13 +63,13 @@ void spinningTop_Renderer::Render(
 
 	if (drawParams->b_drawTrajectory)
 	{
+		SyncGPUTrajectoryBuffer();
+
 		m_shader_traj.Use();
 		m_shader_traj.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
 
-		glPointSize(3.0f);
 		glBindVertexArray(m_trajVertexArray);
-		glDrawArrays(GL_POINTS, 0, m_trajBuffer->Size());
-		glPointSize(1.0f);
+		glDrawArrays(GL_POINTS, 0, m_trajDrawSize);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -116,12 +116,45 @@ void spinningTop_Renderer::UpdateGPUTrajectoryBuffer()
 {
 	size_t gpuBuffSize = sizeof(glm::vec3) * m_trajBuffer->Capacity();
 	size_t writeSize = sizeof(glm::vec3) * m_trajBuffer->Size();
+	m_trajDrawSize =  m_trajBuffer->Size();
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
 	glBufferData(GL_ARRAY_BUFFER, gpuBuffSize, nullptr, GL_DYNAMIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(0));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void spinningTop_Renderer::ClearGPUTrajectoryBuffer()
+{
+	m_trajDrawSize = 0;
+	m_trajLastPos = 0;
+
+	// We do not care what inside GPU buffer after reset, just don't drow it.
+
+	m_trajBuffer->Reset();
+}
+
+void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
+{
+	m_trajBuffer->Lock();
+
+	m_trajDrawSize = m_trajBuffer->Size();
+	int Pos = m_trajBuffer->WritePos();
+	if (Pos > m_trajLastPos) 
+	{
+		size_t writeSize = sizeof(glm::vec3) * (Pos - m_trajLastPos);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(m_trajLastPos));
+		
+		// m_trajLastPos = Pos;
+	}
+	// else 
+	// {
+
+	// }
+
+	m_trajBuffer->Unlock();
 }
 
 void spinningTop_Renderer::SetUpFramebuffer()
@@ -167,7 +200,7 @@ void spinningTop_Renderer::SetUpScene()
     glGenBuffers(1, &m_trajArrayBuffer);
     glBindVertexArray(m_trajVertexArray);
     glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);

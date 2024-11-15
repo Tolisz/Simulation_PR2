@@ -12,6 +12,7 @@ spinningTop_App::spinningTop_App()
 	
 	auto buffer = m_renderer->GetTrajectoryBuffer();
 	buffer->ReallocateMemory(m_paramsDraw->m_trajectoryPointsNum);
+	m_renderer->UpdateGPUTrajectoryBuffer();
 
 	m_paramsSet 	= std::make_unique<simulationParametersSet>();
 	SetPresetID(0);
@@ -71,6 +72,7 @@ void spinningTop_App::ResetSimulation()
 	{
 	case State::Stopped:
 		m_state = State::Initial;
+		m_renderer->ClearGPUTrajectoryBuffer();
 		m_simThread->EndSimulation();
 		break;
 	

@@ -19,7 +19,10 @@ public:
 
 	std::size_t Capacity();
 	std::size_t Size();
+	int WritePos();
+	
 	void* GetDataFrom(int pos);
+	void Reset();
 
 private:
 

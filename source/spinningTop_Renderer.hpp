@@ -35,8 +35,11 @@ public:
 
 	std::shared_ptr<trajectoryBuffer> GetTrajectoryBuffer();
 	void UpdateGPUTrajectoryBuffer();
-	
+	void ClearGPUTrajectoryBuffer();
+
 private:
+
+	void SyncGPUTrajectoryBuffer();
 
 	void SetUpFramebuffer(); 
 	void SetUpScene();
@@ -67,4 +70,6 @@ private:
 	GLuint m_trajArrayBuffer;
 
 	std::shared_ptr<trajectoryBuffer> m_trajBuffer;
+	int m_trajLastPos = 0;
+	int m_trajDrawSize = 0;
 };

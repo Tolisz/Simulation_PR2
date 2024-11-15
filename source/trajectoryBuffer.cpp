@@ -119,9 +119,9 @@ void trajectoryBuffer::PutPoint(const glm::vec3& point)
 		m_WritePos += 1;
 	}
 	else {
+		m_WritePos %= m_buffer.size();
 		m_buffer[m_WritePos] = point;
 		m_WritePos += 1;
-		m_WritePos %= m_buffer.size();
 	}
 }
 
@@ -145,9 +145,20 @@ std::size_t trajectoryBuffer::Size()
 	return m_buffer.size();
 }
 
+int trajectoryBuffer::WritePos()
+{
+	return m_WritePos; 
+}
+
 void* trajectoryBuffer::GetDataFrom(int pos)
 {
 	glm::vec3* start = m_buffer.data();
 	start += pos;
 	return static_cast<void*>(start);
+}
+
+void trajectoryBuffer::Reset()
+{
+	m_buffer.clear();
+	m_WritePos = 0;
 }
