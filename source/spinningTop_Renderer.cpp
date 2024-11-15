@@ -127,7 +127,7 @@ void spinningTop_Renderer::UpdateGPUTrajectoryBuffer()
 void spinningTop_Renderer::ClearGPUTrajectoryBuffer()
 {
 	m_trajDrawSize = 0;
-	m_trajLastPos = 0;
+	m_trajGPUPos = 0;
 
 	// We do not care what inside GPU buffer after reset, just don't drow it.
 
@@ -138,22 +138,30 @@ void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
 {
 	m_trajBuffer->Lock();
 
-	m_trajDrawSize = m_trajBuffer->Size();
 	int Pos = m_trajBuffer->WritePos();
-	if (Pos > m_trajLastPos) 
+	if (Pos > m_trajGPUPos) 
 	{
-		size_t writeSize = sizeof(glm::vec3) * (Pos - m_trajLastPos);
+		size_t writeSize = sizeof(glm::vec3) * (Pos - m_trajGPUPos);
+		size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(m_trajLastPos));
-		
-		// m_trajLastPos = Pos;
+		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
 	}
-	// else 
-	// {
+	else 
+	{
+		size_t writeSize = sizeof(glm::vec3) * (m_trajGPUPos - m_trajBuffer->Size());
+		size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
 
-	// }
+		glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
 
+		writeSize = sizeof(glm::vec3) * Pos;
+		offset = 0;
+		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(0));
+	}
+
+	m_trajGPUPos = Pos;
+	m_trajDrawSize = m_trajBuffer->Size();
 	m_trajBuffer->Unlock();
 }
 

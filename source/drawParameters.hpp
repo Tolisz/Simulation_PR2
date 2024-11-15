@@ -10,7 +10,7 @@ struct drawParameters
 	glm::vec4 m_colorTrajectory		= {1.0	, 1.0	, 1.0	, 1.0};
 	glm::vec4 m_colorGravitation	= {0.0	, 1.0	, 1.0	, 0.6};
 
-	int m_trajectoryPointsNum 	= 1000; 
+	int m_trajectoryPointsNum 	= 200; 
 
 	bool b_drawCube 		= true;
 	bool b_drawDiagonal 	= true;
