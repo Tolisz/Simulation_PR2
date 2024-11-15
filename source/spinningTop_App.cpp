@@ -172,6 +172,7 @@ simulationDrawParameters spinningTop_App::GetStartSimulationDrawParams()
 	params.m_cubeEdgeLength = m_paramsSimulation->m_cubeEdgeLength;
 	params.m_Q =  glm::angleAxis(m_paramsSimulation->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
 	params.b_simulationStarted = false;
+	params.b_forceApplied = m_paramsSimulation->b_Gravity;
 
 	return params;
 }
@@ -182,6 +183,7 @@ simulationDrawParameters spinningTop_App::GetCurrentSimulationDrawParams()
 	params.m_cubeEdgeLength = m_paramsSimulation->m_cubeEdgeLength;
 	params.m_Q = m_simThread->GetRotation();
 	params.b_simulationStarted = true;
-	
+	params.b_forceApplied = m_paramsSimulation->b_Gravity;
+
 	return params;
 }

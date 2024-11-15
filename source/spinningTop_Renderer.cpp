@@ -25,7 +25,7 @@ void spinningTop_Renderer::Render(
 {
 	glEnable(GL_DEPTH_TEST);
 	glEnable( GL_BLEND );
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glViewport(0, 0, m_sceneSize.x, m_sceneSize.y);
@@ -45,6 +45,7 @@ void spinningTop_Renderer::Render(
 		glm::scale(glm::mat4(1.0f), glm::vec3(simResult.m_cubeEdgeLength)) *
 		m_cubeInitModelMatrix;
 
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (drawParams->b_drawCube)
 	{
 		m_shader_cube.Use();
@@ -53,6 +54,7 @@ void spinningTop_Renderer::Render(
 		m_shader_cube.setM4fv("model", false, model);
 		m_cube->Draw();
 	}
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	if (drawParams->b_drawDiagonal)
 	{
@@ -81,10 +83,31 @@ void spinningTop_Renderer::Render(
 			glDrawArrays(GL_LINE_STRIP, m_trajGPUPos, m_trajDrawSize - m_trajGPUPos);
 			glDrawArrays(GL_LINE_STRIP, 0, m_trajGPUPos);
 			
-			glBindVertexArray(m_LastLineVertexArray);
-			glDrawElements(GL_LINE_STRIP, 2, GL_UNSIGNED_INT, 0);
+			// glBindVertexArray(m_LastLineVertexArray);
+			// glDrawElements(GL_LINE_STRIP, 2, GL_UNSIGNED_INT, 0);
 		}
 		
+	}
+
+	if (drawParams->b_drawGravitation)
+	{
+		// Quad
+		m_shader_gravityQuad.Use();
+		m_shader_gravityQuad.set4fv("GravitationColor", drawParams->m_colorGravitation);
+		
+		glBindVertexArray(m_quadVertexArray);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// Gravitation Vector
+		if (simResult.b_forceApplied) 
+		{
+			m_shader_gravityForce.Use();
+			m_shader_gravityForce.setM4fv("model", false, model);
+			m_shader_gravityForce.set4fv("GravitationColor", drawParams->m_colorGravitation);
+			m_shader_gravityForce.set1f("edgeLength", simResult.m_cubeEdgeLength);
+			glBindVertexArray(m_forceVertexArray);
+			glDrawArrays(GL_LINES, 0, 2);
+		}
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -239,6 +262,10 @@ void spinningTop_Renderer::SetUpScene()
     glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
 	glBindVertexArray(0);
+
+	// Gravity
+	glGenVertexArrays(1, &m_quadVertexArray);
+	glGenVertexArrays(1, &m_forceVertexArray);
 }
 
 void spinningTop_Renderer::PrepareShaders()
@@ -257,6 +284,16 @@ void spinningTop_Renderer::PrepareShaders()
 	m_shader_traj.AttachShader("./shaders/trajectory.vert", GL_VERTEX_SHADER);
 	m_shader_traj.AttachShader("./shaders/trajectory.frag", GL_FRAGMENT_SHADER);
 	m_shader_traj.Link();
+
+	m_shader_gravityQuad.Init();
+	m_shader_gravityQuad.AttachShader("./shaders/quad.vert", GL_VERTEX_SHADER);
+	m_shader_gravityQuad.AttachShader("./shaders/quad.frag", GL_FRAGMENT_SHADER);
+	m_shader_gravityQuad.Link();
+
+	m_shader_gravityForce.Init();
+	m_shader_gravityForce.AttachShader("./shaders/force.vert", GL_VERTEX_SHADER);
+	m_shader_gravityForce.AttachShader("./shaders/force.frag", GL_FRAGMENT_SHADER);
+	m_shader_gravityForce.Link();
 
 	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
     m_UBO_Matrices.BindBufferBaseToBindingPoint(0);

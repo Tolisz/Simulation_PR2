@@ -17,6 +17,7 @@ struct simulationParameters
 struct simulationDrawParameters 
 {
 	bool b_simulationStarted;
+	bool b_forceApplied;
 	float m_cubeEdgeLength;
 	glm::quat m_Q;
 };

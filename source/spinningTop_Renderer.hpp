@@ -76,4 +76,11 @@ private:
 	int m_trajGPUPos = 0;
 	int m_trajDrawSize = 0;
 	bool b_trajDrawDifferently = false;
+	
+	// Gravity
+	shader m_shader_gravityQuad;
+	GLuint m_quadVertexArray;
+
+	shader m_shader_gravityForce;
+	GLuint m_forceVertexArray;
 };
