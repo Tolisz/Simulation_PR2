@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 spinningTop_Renderer::spinningTop_Renderer()
 {
@@ -58,6 +59,7 @@ void spinningTop_Renderer::Render(
 		m_shader_cubeDiagonal.Use();
 		m_shader_cubeDiagonal.set4fv("lineColor", drawParams->m_colorDiagonal);
 		m_shader_cubeDiagonal.setM4fv("model", false, model);
+		glBindVertexArray(m_diagonalVertexArray);
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 
@@ -68,8 +70,21 @@ void spinningTop_Renderer::Render(
 		m_shader_traj.Use();
 		m_shader_traj.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
 
-		glBindVertexArray(m_trajVertexArray);
-		glDrawArrays(GL_POINTS, 0, m_trajDrawSize);
+		if (!b_trajDrawDifferently)
+		{
+			glBindVertexArray(m_trajVertexArray);
+			glDrawArrays(GL_LINE_STRIP, 0, m_trajDrawSize);
+		}
+		else 
+		{
+			glBindVertexArray(m_trajVertexArray);
+			glDrawArrays(GL_LINE_STRIP, m_trajGPUPos, m_trajDrawSize - m_trajGPUPos);
+			glDrawArrays(GL_LINE_STRIP, 0, m_trajGPUPos);
+			
+			glBindVertexArray(m_LastLineVertexArray);
+			glDrawElements(GL_LINE_STRIP, 2, GL_UNSIGNED_INT, 0);
+		}
+		
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -128,6 +143,7 @@ void spinningTop_Renderer::ClearGPUTrajectoryBuffer()
 {
 	m_trajDrawSize = 0;
 	m_trajGPUPos = 0;
+	b_trajDrawDifferently = false;
 
 	// We do not care what inside GPU buffer after reset, just don't drow it.
 
@@ -147,8 +163,10 @@ void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
 		glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
 	}
-	else 
+	else if (Pos < m_trajGPUPos)
 	{
+		b_trajDrawDifferently = true;
+
 		size_t writeSize = sizeof(glm::vec3) * (m_trajGPUPos - m_trajBuffer->Size());
 		size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
 
@@ -158,6 +176,10 @@ void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
 		writeSize = sizeof(glm::vec3) * Pos;
 		offset = 0;
 		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(0));
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
+		unsigned int indices[] = {0, m_trajBuffer->Size() - 1}; 
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	}
 
 	m_trajGPUPos = Pos;
@@ -197,21 +219,26 @@ void spinningTop_Renderer::SetUpScene()
 		glm::translate(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f}) * 
 		glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5});
 	
+	// DIAGONAL
+	glGenVertexArrays(1, &m_diagonalVertexArray);
+
 	// TRAJECTORY
-	float vertices[] = {
-        // positions        
-         1.0f, -1.0f, 0.0f,  // bottom right
-        -1.0f, -1.0f, 0.0f,  // bottom left
-         1.0f,  1.0f, 0.0f,  // top 
-    };
 	glGenVertexArrays(1, &m_trajVertexArray);
+	glGenVertexArrays(1, &m_LastLineVertexArray);
     glGenBuffers(1, &m_trajArrayBuffer);
+	glGenBuffers(1, &m_LastLineElements);
+
     glBindVertexArray(m_trajVertexArray);
     glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+	glBindVertexArray(m_LastLineVertexArray);
+	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
+	glBindVertexArray(0);
 }
 
 void spinningTop_Renderer::PrepareShaders()

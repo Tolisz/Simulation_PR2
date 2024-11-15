@@ -74,6 +74,7 @@ void obj_cube::Draw()
 {
 	glBindVertexArray(m_vertexArray);
 	glDrawElements(GL_TRIANGLES, 3 * sizeof(c_elements) / sizeof(glm::uvec3), GL_UNSIGNED_INT, (void*)0);
+	glBindVertexArray(0);
 }
 
 void obj_cube::InitGL()

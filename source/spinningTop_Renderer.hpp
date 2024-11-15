@@ -63,13 +63,17 @@ private:
 
 	// Cube's diagonal
 	shader m_shader_cubeDiagonal;
-	
+	GLuint m_diagonalVertexArray;
+
 	// Trajectory
 	shader m_shader_traj;
 	GLuint m_trajVertexArray;
+	GLuint m_LastLineVertexArray;
+	GLuint m_LastLineElements;
 	GLuint m_trajArrayBuffer;
 
 	std::shared_ptr<trajectoryBuffer> m_trajBuffer;
 	int m_trajGPUPos = 0;
 	int m_trajDrawSize = 0;
+	bool b_trajDrawDifferently = false;
 };
