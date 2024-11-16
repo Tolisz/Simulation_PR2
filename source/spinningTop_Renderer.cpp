@@ -78,7 +78,7 @@ void spinningTop_Renderer::Render(
 		if (!b_trajDrawDifferently)
 		{
 			glBindVertexArray(m_trajVertexArray);
-			glDrawArrays(GL_LINE_STRIP, 0, m_trajDrawSize);
+			glDrawArrays(GL_LINE_STRIP, 0, m_trajDrawSize - 1);
 		}
 		else 
 		{
@@ -193,37 +193,40 @@ void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
 {
 	m_trajBuffer->Lock();
 
-	int Pos = m_trajBuffer->WritePos();
-	if (Pos > m_trajGPUPos) 
-	{
-		size_t writeSize = sizeof(glm::vec3) * (Pos - m_trajGPUPos);
-		size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
+	ReallocateGPUTrajectoryBuffer();
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
-	}
-	else if (Pos < m_trajGPUPos)
-	{
-		b_trajDrawDifferently = true;
+	// int Pos = m_trajBuffer->WritePos();
+	// if (Pos > m_trajGPUPos) 
+	// {
+	// 	size_t writeSize = sizeof(glm::vec3) * (Pos - m_trajGPUPos);
+	// 	size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
 
-		size_t writeSize = sizeof(glm::vec3) * (m_trajGPUPos - m_trajBuffer->Size());
-		size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
+	// 	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+	// 	glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
+	// }
+	// else if (Pos < m_trajGPUPos)
+	// {
+	// 	b_trajDrawDifferently = true;
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
+	// 	size_t writeSize = sizeof(glm::vec3) * (m_trajGPUPos - m_trajBuffer->Size());
+	// 	size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
 
-		writeSize = sizeof(glm::vec3) * Pos;
-		offset = 0;
-		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(0));
+	// 	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
+	// 	glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
+
+	// 	writeSize = sizeof(glm::vec3) * Pos;
+	// 	offset = 0;
+	// 	glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(0));
 
 		
-		// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
-		// unsigned int indices[] = {0, m_trajBuffer->Size() - 1}; 
-		// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	}
+	// 	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
+	// 	// unsigned int indices[] = {0, m_trajBuffer->Size() - 1}; 
+	// 	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// }
 
-	m_trajGPUPos = Pos;
-	m_trajDrawSize = m_trajBuffer->Size();
+	// m_trajGPUPos = m_trajBuffer->WritePos();
+
+	// m_trajDrawSize = m_trajBuffer->Size();
 	m_trajBuffer->Unlock();
 }
 

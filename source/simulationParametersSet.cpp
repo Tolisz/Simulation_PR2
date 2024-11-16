@@ -53,7 +53,7 @@ void simulationParametersSet::PrepareSimulationParameters()
 	params.m_cubeDensity 			= 2.0f;
 	params.m_cubeTilt 				= 0.0f;
 	params.m_cubeAngularVelocity 	= 2.0f * glm::pi<float>();
-	params.m_delta 					= 0.01f;
+	params.m_delta 					= 0.001f;
 	params.b_Gravity 				= true;
 
 	RegisterParameters(params, "Default");
@@ -73,7 +73,7 @@ void simulationParametersSet::PrepareSimulationParameters()
 	params.m_cubeDensity 			= 2.0f;
 	params.m_cubeTilt 				= glm::radians(30.0f);
 	params.m_cubeAngularVelocity 	= 10.0f * glm::pi<float>();
-	params.m_delta 					= 0.01f;
+	params.m_delta 					= 0.001f;
 	params.b_Gravity 				= true;
 
 	RegisterParameters(params, "Spinning Top");
@@ -83,7 +83,7 @@ void simulationParametersSet::PrepareSimulationParameters()
 	params.m_cubeDensity 			= 2.0f;
 	params.m_cubeTilt 				= 0.0f;
 	params.m_cubeAngularVelocity 	= 0.0f;
-	params.m_delta 					= 0.01f;
+	params.m_delta 					= 0.001f;
 	params.b_Gravity 				= true;
 
 	RegisterParameters(params, "Static");
