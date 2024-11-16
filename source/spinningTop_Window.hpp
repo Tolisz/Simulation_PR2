@@ -44,8 +44,7 @@ private:
 
     // GUI miscellaneous
     void GUI_UpdateDockingLayout();
-    void GUI_UpdateRenderRegion();
-    
+    void GUI_UpdateRenderRegion();    
 
 private:
 

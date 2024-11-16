@@ -85,9 +85,9 @@ void spinningTop_Renderer::Render(
 			glBindVertexArray(m_trajVertexArray);
 			glDrawArrays(GL_LINE_STRIP, m_trajGPUPos, m_trajDrawSize - m_trajGPUPos);
 			glDrawArrays(GL_LINE_STRIP, 0, m_trajGPUPos);
-			
+
 			// glBindVertexArray(m_LastLineVertexArray);
-			// glDrawElements(GL_LINE_STRIP, 2, GL_UNSIGNED_INT, 0);
+			// glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
 		}
 		
 	}
@@ -155,7 +155,6 @@ std::shared_ptr<trajectoryBuffer> spinningTop_Renderer::GetTrajectoryBuffer()
 
 void spinningTop_Renderer::ReallocateGPUTrajectoryBuffer()
 {
-	std::cout << "Reallocate" << std::endl;
 	size_t gpuBuffSize = sizeof(glm::vec3) * m_trajBuffer->Capacity();
 	size_t writeSize = sizeof(glm::vec3) * m_trajBuffer->Size();
 	m_trajDrawSize =  m_trajBuffer->Size();
@@ -165,12 +164,15 @@ void spinningTop_Renderer::ReallocateGPUTrajectoryBuffer()
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(0));
 
+	glBindBuffer(GL_ARRAY_BUFFER, m_LastLineElements);
+	unsigned int indices[] = {m_trajBuffer->Size() - 2, m_trajBuffer->Size() - 1}; 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 	b_trajGPUbufferAllocated = true;
 }
 
 void spinningTop_Renderer::FreeGPUTrajectoryBuffer()
 {
-	std::cout << "Free" << std::endl;
 	m_trajDrawSize = 0;
 	m_trajGPUPos = 0;
 	b_trajDrawDifferently = false;
@@ -178,7 +180,7 @@ void spinningTop_Renderer::FreeGPUTrajectoryBuffer()
 	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 	b_trajGPUbufferAllocated = false;
-	
+
 	m_trajBuffer->Reset();
 }
 
@@ -214,9 +216,10 @@ void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
 		offset = 0;
 		glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(0));
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
-		unsigned int indices[] = {0, m_trajBuffer->Size() - 1}; 
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		
+		// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
+		// unsigned int indices[] = {0, m_trajBuffer->Size() - 1}; 
+		// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	}
 
 	m_trajGPUPos = Pos;

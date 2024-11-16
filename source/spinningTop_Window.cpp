@@ -238,10 +238,9 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 
 	float itemWidth = ImGui::GetWindowWidth() * 0.4f;
 	ImGui::SetNextItemWidth(itemWidth);
-	ImGui::DragInt("Number of trajectorys' points", &drawParams->m_trajectoryPointsNum, 100, 100, 10000, "%d", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::DragInt("Number of trajectorys' points", &drawParams->m_trajectoryPointsNum, 20, 100, 10000, "%d", ImGuiSliderFlags_AlwaysClamp);
 	if (b_TrajectoryNumberChanging == true && ImGui::IsItemActive() == false)
 	{
-		std::cout << "PROBA" << std::endl;
 		m_app->SetNewTrajectoryBufferSize(drawParams->m_trajectoryPointsNum);
 	}
 	b_TrajectoryNumberChanging = ImGui::IsItemActive();

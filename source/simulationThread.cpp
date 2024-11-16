@@ -102,6 +102,11 @@ void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationP
 
 void simulationThread::SimulationThread()
 {
+	auto START = std::chrono::high_resolution_clock::now();
+	int N = 0;
+	
+	std::chrono::duration<double> DELTA(static_cast<double>(m_dt));
+	
 	while (true)
 	{
 		m_blockSimulation.lock();
@@ -111,8 +116,14 @@ void simulationThread::SimulationThread()
 		}
 		m_blockSimulation.unlock();
 
-		auto start = std::chrono::high_resolution_clock::now();
-
+		auto now = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> t = now - START;
+		int N_theoretical = t.count() / static_cast<double>(m_dt);
+		// std::cout << N_theoretical << std::endl;
+		
+		auto end = N_theoretical > N ? 
+			now : std::chrono::high_resolution_clock::now() + DELTA * (N - N_theoretical);
+		
 		std::pair<glm::vec3, glm::quat> nextValues = RK4();
 
 		m_blockWQRead.lock();
@@ -123,16 +134,12 @@ void simulationThread::SimulationThread()
 		m_trajectoryBuffer->Lock();
 		m_trajectoryBuffer->PutPoint(nextValues.second * m_cornerPoint);
 		m_trajectoryBuffer->Unlock();
-		
-		auto end = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> duration = end - start;
 
-		if (duration.count() < m_dt)
-		{
-			std::this_thread::sleep_for(std::chrono::duration<double>(
-				m_dt - duration.count()
-			));
-		}
+		while (std::chrono::high_resolution_clock::now() < end) { }
+
+		// std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - START;
+		// std::cout << "N = " << N << "; t = " << time.count() << std::endl;
+		N++;
 	}
 }
 
