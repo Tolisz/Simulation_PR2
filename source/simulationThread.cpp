@@ -109,20 +109,39 @@ void simulationThread::SimulationThread()
 	
 	while (true)
 	{
-		m_blockSimulation.lock();
-		if (b_shouldEndSimulation)  {
+		if (m_blockSimulation.try_lock())
+		{
+			if (b_shouldEndSimulation)  {
+				m_blockSimulation.unlock();
+				break; 
+			}
 			m_blockSimulation.unlock();
-			break; 
 		}
-		m_blockSimulation.unlock();
+		else 
+		{
+			auto lockStart = std::chrono::high_resolution_clock::now();
+			
+			m_blockSimulation.lock();
+			if (b_shouldEndSimulation)  {
+				m_blockSimulation.unlock();
+				break; 
+			}
+			m_blockSimulation.unlock();
+
+			auto lockEnd = std::chrono::high_resolution_clock::now();
+			START += (lockEnd - lockStart);
+		}
 
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> t = now - START;
 		int N_theoretical = t.count() / static_cast<double>(m_dt);
 		// std::cout << N_theoretical << std::endl;
 		
-		auto end = N_theoretical > N ? 
-			now : std::chrono::high_resolution_clock::now() + DELTA * (N - N_theoretical);
+		auto end = N_theoretical > N ? now : now + DELTA * (N - N_theoretical);
+		
+		// =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=* //
+		// =*=*=* Simulation [START] *=*=*= // 
+		// =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=* // 
 		
 		std::pair<glm::vec3, glm::quat> nextValues = RK4();
 
@@ -134,6 +153,9 @@ void simulationThread::SimulationThread()
 		m_trajectoryBuffer->Lock();
 		m_trajectoryBuffer->PutPoint(nextValues.second * m_cornerPoint);
 		m_trajectoryBuffer->Unlock();
+		// =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=* //
+		// =*=*=* Simulation [ END ] *=*=*= // 
+		// =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=* //
 
 		while (std::chrono::high_resolution_clock::now() < end) { }
 
