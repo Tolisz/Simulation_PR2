@@ -78,7 +78,7 @@ void spinningTop_Renderer::Render(
 		if (!b_trajDrawDifferently)
 		{
 			glBindVertexArray(m_trajVertexArray);
-			glDrawArrays(GL_LINE_STRIP, 0, m_trajDrawSize - 1);
+			glDrawArrays(GL_POINTS, 0, m_trajDrawSize - 1);
 		}
 		else 
 		{

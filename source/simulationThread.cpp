@@ -187,7 +187,7 @@ std::pair<glm::vec3, glm::quat> simulationThread::RK4()
 	glm::quat k3_Q = Derivative_Q(m_Q + k2_Q * (m_dt / 2.0f), W);
 	glm::quat k4_Q = Derivative_Q(m_Q + k3_Q * m_dt, W);
 
-	glm::quat dQ = (k1_Q + 2.0f * k2_Q + 2.0f * k3_Q + k4_Q) * (m_dt / 12.0f);
+	glm::quat dQ = (k1_Q + 2.0f * k2_Q + 2.0f * k3_Q + k4_Q) * (m_dt / 6.0f);
 	newValues.second = glm::normalize(m_Q + dQ); 
 
 	return newValues;
