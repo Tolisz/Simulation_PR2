@@ -135,7 +135,6 @@ void simulationThread::SimulationThread()
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> t = now - START;
 		int N_theoretical = t.count() / static_cast<double>(m_dt);
-		// std::cout << N_theoretical << std::endl;
 		
 		auto end = N_theoretical > N ? now : now + DELTA * (N - N_theoretical);
 		
@@ -157,10 +156,9 @@ void simulationThread::SimulationThread()
 		// =*=*=* Simulation [ END ] *=*=*= // 
 		// =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=* //
 
+		// :(
 		while (std::chrono::high_resolution_clock::now() < end) { }
 
-		// std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - START;
-		// std::cout << "N = " << N << "; t = " << time.count() << std::endl;
 		N++;
 	}
 }

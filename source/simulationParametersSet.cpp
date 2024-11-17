@@ -68,15 +68,35 @@ void simulationParametersSet::PrepareSimulationParameters()
 
 	RegisterParameters(params, "Pendulum");
 
-	// spinning top
+	// spinning top 1
 	params.m_cubeEdgeLength 		= 1.0f;
 	params.m_cubeDensity 			= 2.0f;
 	params.m_cubeTilt 				= glm::radians(30.0f);
-	params.m_cubeAngularVelocity 	= 10.0f * glm::pi<float>();
+	params.m_cubeAngularVelocity 	= 20.0f * glm::pi<float>();
 	params.m_delta 					= 0.001f;
 	params.b_Gravity 				= true;
 
-	RegisterParameters(params, "Spinning Top");
+	RegisterParameters(params, "Spinning Top 1");
+
+	// spinning top 2
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(30.0f);
+	params.m_cubeAngularVelocity 	= 15.0f * glm::pi<float>();
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Spinning Top 2");
+
+	// spinning top 3
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(45.0f);
+	params.m_cubeAngularVelocity 	= 20.0f * glm::pi<float>();
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Spinning Top 3");
 
 	// spinning top
 	params.m_cubeEdgeLength 		= 1.0f;
@@ -87,6 +107,37 @@ void simulationParametersSet::PrepareSimulationParameters()
 	params.b_Gravity 				= true;
 
 	RegisterParameters(params, "Static");
+
+	// bowl
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 0.1f;
+	params.m_cubeTilt 				= glm::radians(90.0f);
+	params.m_cubeAngularVelocity 	= 1.0f * glm::pi<float>();
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Bowl");
+
+	// crown
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(90.0f);
+	params.m_cubeAngularVelocity 	= 9.55f * glm::pi<float>();
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Crown");
+
+	// flower
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(30.0f);
+	params.m_cubeAngularVelocity 	= 42.13f;
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Flower");
+
 }
 
 void simulationParametersSet::RegisterParameters(
