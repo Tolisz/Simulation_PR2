@@ -8,8 +8,8 @@
 #include <iostream>
 
 /* static */ const char* spinningTop_Window::c_angleTypes[] = {
-	"deg",
-	"rad"
+	"deg/s",
+	"rad/s"
 };
 
 /* static */ const char* spinningTop_Window::c_trajDrawModes[] = {
@@ -338,7 +338,7 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 		simulationParams->m_cubeTilt = glm::radians(currentTilt);
 	}
 
-	ImGui::SetNextItemWidth(itemWidth * 0.8f - spacing);
+	ImGui::SetNextItemWidth(itemWidth * 0.75f - spacing);
 	if (m_selectedAngVelAngleType == 0)
 	{
 		float currentVelocity = glm::degrees(simulationParams->m_cubeAngularVelocity);
@@ -356,7 +356,7 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 	}
 	
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(itemWidth * 0.2f);
+	ImGui::SetNextItemWidth(itemWidth * 0.25f);
 	if (ImGui::BeginCombo("##Angular velocity Combo", c_angleTypes[m_selectedAngVelAngleType]))
 	{
 		for (int n = 0; n < 2; n++)
