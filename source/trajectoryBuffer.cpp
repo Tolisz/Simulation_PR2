@@ -118,19 +118,16 @@ void trajectoryBuffer::ReallocateCPUMemory(std::size_t newCapacity)
 				int frontLength = m_cpu_writePos;
 				int backLength = newCapacity - frontLength;
 				int to_back = oldCapacity - backLength;
-
+				
 				auto it_beg = m_cpu_buffer.begin();
-				auto it_end = m_cpu_buffer.begin();
-				std::advance(it_end, frontLength);
-				auto start = newBuffer.begin();
-				std::advance(start, backLength);
+				std::advance(it_beg, to_back);
+				auto it_end = m_cpu_buffer.end();
 
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 
 				it_beg = m_cpu_buffer.begin();
-				std::advance(it_beg, to_back);
-				it_end = m_cpu_buffer.end();
-				start = newBuffer.begin();
+				it_end = m_cpu_buffer.begin();
+				std::advance(it_end, frontLength);
 
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 				m_cpu_writePos = 0;
