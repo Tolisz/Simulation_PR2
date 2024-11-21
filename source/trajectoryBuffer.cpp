@@ -37,21 +37,24 @@ void trajectoryBuffer::Draw(bool drawLines)
 		{
 			if (m_gpu_writePos == 0)
 			{
+				// draw whole array.
 				glBindVertexArray(m_vertexArray);
-				glDrawArrays(GL_LINE_STRIP, 0, Size());
-				glBindVertexArray(0);
+				glDrawArrays(GL_LINE_STRIP, 0, Capacity());
 			}
 			else 
 			{
 				// tail
 				glBindVertexArray(m_vertexArray);
-				glDrawArrays(GL_LINE_STRIP, m_gpu_writePos, Size() - m_gpu_writePos);
+				glDrawArrays(GL_LINE_STRIP, m_gpu_writePos, Capacity() - m_gpu_writePos);
 
 				// head 
 				glDrawArrays(GL_LINE_STRIP, 0, m_gpu_writePos);
 				glBindVertexArray(0);
 
 				// link
+				glBindVertexArray(m_vertexArrayLink);
+				glDrawElements(GL_LINE_STRIP, 2, GL_UNSIGNED_INT, 0);
+				glBindVertexArray(0);	
 			}
 		}
 	}
@@ -191,6 +194,12 @@ void trajectoryBuffer::ReallocateGPUMemory()
 	glBufferData(GL_ARRAY_BUFFER, newCapacity, nullptr, GL_DYNAMIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, GetDataFrom(0));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// link buffer 
+	unsigned int indices[] = {Capacity() - 1, 0};
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementsBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void trajectoryBuffer::SyncCPUGPUBuffers()
@@ -250,16 +259,17 @@ void trajectoryBuffer::SyncCPUGPUBuffers()
 
 void trajectoryBuffer::PutPoint(const glm::vec3& point)
 {
-	if (m_cpu_buffer.size() < m_cpu_buffer.capacity())
+	if (Size() < Capacity()) 
 	{
 		m_cpu_buffer.push_back(point);
-		m_cpu_writePos += 1;
 	}
-	else {
-		m_cpu_writePos %= m_cpu_buffer.size();
+	else // Size() = Capacity() -> Cycle
+	{
 		m_cpu_buffer[m_cpu_writePos] = point;
-		m_cpu_writePos += 1;
 	}
+	
+	m_cpu_writePos += 1;
+	m_cpu_writePos %= Capacity();
 
 	m_numOfNotSynced += 1;
 }
@@ -296,14 +306,9 @@ void* trajectoryBuffer::GetDataFrom(int pos)
 	return static_cast<void*>(start);
 }
 
-// void trajectoryBuffer::Reset()
-// {
-// 	m_cpu_buffer.clear();
-// 	m_cpu_writePos = 0;
-// }
-
 void trajectoryBuffer::InitGL(std::size_t initialPointsNum)
 {
+	// For main lines
 	glCreateVertexArrays(1, &m_vertexArray);
 	glCreateBuffers(1, &m_gpu_buffer);
 
@@ -311,6 +316,17 @@ void trajectoryBuffer::InitGL(std::size_t initialPointsNum)
     glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+
+	// For link
+	glCreateVertexArrays(1, &m_vertexArrayLink);
+	glCreateBuffers(1, &m_elementsBuffer);
+
+	glBindVertexArray(m_vertexArrayLink);
+	glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementsBuffer);
 	glBindVertexArray(0);
 }
 

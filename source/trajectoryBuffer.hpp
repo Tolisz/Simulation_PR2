@@ -26,7 +26,6 @@ public:
 	int WritePos();
 	
 	void* GetDataFrom(int pos);
-	// void Reset();
 
 private: 
 
@@ -50,4 +49,7 @@ private:
 	int m_gpu_writePos = 0;
 
 	int m_numOfNotSynced = 0;
+
+	GLuint m_vertexArrayLink;
+	GLuint m_elementsBuffer;
 };

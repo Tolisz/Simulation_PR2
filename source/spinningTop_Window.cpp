@@ -263,8 +263,6 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 		ImGui::EndCombo();
 	}
 
-	std::cout << drawParams->b_drawTrajectoryAsLine << std::endl;
-	
 	ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(itemWidth);
