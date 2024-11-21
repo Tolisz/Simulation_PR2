@@ -46,20 +46,21 @@ private:
 
 	// Thread logic
 	std::thread m_simulationThread;
-	bool b_isThreadRunning = false;
+	bool b_threadRunning = false;
+	bool b_simulationStopped = true;
 
-	std::mutex 			m_blockSimulation;
-	std::atomic_bool 	b_shouldEndSimulation;
+	std::mutex 			m_stopSimulation;
+	std::atomic_bool 	b_endSimulation;
 
 	// Simulation members 
 	glm::mat3 m_I;
 	glm::mat3 m_invI;
 	glm::vec3 m_f;
-	std::atomic_bool b_ApplyForce = true;
+	std::atomic_bool b_applyForce = true;
 	float m_diag; // diagonal Length
 	float m_dt;
 
-	std::mutex			m_blockWQRead;
+	std::mutex	m_accessWQ;
 	glm::quat m_Q;
 	glm::vec3 m_W;
 

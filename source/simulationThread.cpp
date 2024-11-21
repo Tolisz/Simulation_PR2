@@ -1,8 +1,6 @@
 #include "simulationThread.hpp"
 
 #include <iostream>
-// #define GLM_ENABLE_EXPERIMENTAL
-// #include <glm/gtx/norm.hpp>
 
 simulationThread::simulationThread(std::shared_ptr<trajectoryBuffer> buffer)
 	:m_trajectoryBuffer{buffer}
@@ -12,63 +10,67 @@ simulationThread::simulationThread(std::shared_ptr<trajectoryBuffer> buffer)
 
 simulationThread::~simulationThread()
 {
-	if (b_isThreadRunning)
-	{
-		b_shouldEndSimulation = true;
-		m_simulationThread.join();
-	}
+	EndSimulation();
 }
 
 void simulationThread::StartSimulation(std::shared_ptr<const simulationParameters> params)
 {
 	PrepareSimulationValues(params);
 
-	b_shouldEndSimulation = false;
+	b_endSimulation = false;
 	m_simulationThread = std::thread(&simulationThread::SimulationThread, this);
-	b_isThreadRunning = true;
+	b_threadRunning = true;
+	b_simulationStopped = false;
 }
 
 void simulationThread::StopSimulation()
 {
-	if (b_isThreadRunning)
+	if (b_threadRunning)
 	{
-		m_blockSimulation.lock();
+		m_stopSimulation.lock();
+		b_simulationStopped = true;
 	}
 }
 
 void simulationThread::ContinueSimulation()
 {
-	if (b_isThreadRunning)
+	if (b_threadRunning)
 	{
-		m_blockSimulation.unlock();
+		m_stopSimulation.unlock();
+		b_simulationStopped = false;
 	}
 }
 
 void simulationThread::EndSimulation()
 {
-	if (b_isThreadRunning)
+	if (b_threadRunning)
 	{
-		b_shouldEndSimulation = true;
-		m_blockSimulation.unlock();
+		b_endSimulation = true;
+
+		if (b_simulationStopped)
+		{
+			m_stopSimulation.unlock();
+			b_simulationStopped = false;
+		}
 
 		m_simulationThread.join();
-		b_isThreadRunning = false;
+		b_threadRunning = false;
 	}
 }
 
 glm::quat simulationThread::GetRotation()
 {
 	glm::quat currentRotation;
-	m_blockWQRead.lock();
+	m_accessWQ.lock();
 	currentRotation = m_Q;
-	m_blockWQRead.unlock();
+	m_accessWQ.unlock();
 
 	return currentRotation;
 }
 
 void simulationThread::ApplyForce(bool apply)
 {
-	b_ApplyForce = apply;
+	b_applyForce = apply;
 }
 
 void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationParameters> params)
@@ -109,24 +111,24 @@ void simulationThread::SimulationThread()
 	
 	while (true)
 	{
-		if (m_blockSimulation.try_lock())
+		if (m_stopSimulation.try_lock())
 		{
-			if (b_shouldEndSimulation)  {
-				m_blockSimulation.unlock();
+			if (b_endSimulation)  {
+				m_stopSimulation.unlock();
 				break; 
 			}
-			m_blockSimulation.unlock();
+			m_stopSimulation.unlock();
 		}
 		else 
 		{
 			auto lockStart = std::chrono::high_resolution_clock::now();
 			
-			m_blockSimulation.lock();
-			if (b_shouldEndSimulation)  {
-				m_blockSimulation.unlock();
+			m_stopSimulation.lock();
+			if (b_endSimulation)  {
+				m_stopSimulation.unlock();
 				break; 
 			}
-			m_blockSimulation.unlock();
+			m_stopSimulation.unlock();
 
 			auto lockEnd = std::chrono::high_resolution_clock::now();
 			START += (lockEnd - lockStart);
@@ -144,10 +146,10 @@ void simulationThread::SimulationThread()
 		
 		std::pair<glm::vec3, glm::quat> nextValues = RK4();
 
-		m_blockWQRead.lock();
+		m_accessWQ.lock();
 		m_W = nextValues.first;
 		m_Q = nextValues.second;
-		m_blockWQRead.unlock();
+		m_accessWQ.unlock();
 
 		m_trajectoryBuffer->Lock();
 		m_trajectoryBuffer->PutPoint(nextValues.second * m_cornerPoint);
@@ -168,7 +170,7 @@ std::pair<glm::vec3, glm::quat> simulationThread::RK4()
 	std::pair<glm::vec3, glm::quat> newValues;
 
 	// First Equation
-	glm::vec3 N = b_ApplyForce ? ComputeBodyTorque() : glm::vec3(0.0f);
+	glm::vec3 N = b_applyForce ? ComputeBodyTorque() : glm::vec3(0.0f);
 
 	glm::vec3 k1_W = Derivative_W(m_W, m_I, m_invI, N);
 	glm::vec3 k2_W = Derivative_W(m_W + k1_W * (m_dt / 2.0f), m_I, m_invI, N);
