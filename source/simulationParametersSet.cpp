@@ -118,7 +118,7 @@ void simulationParametersSet::PrepareSimulationParameters()
 
 	RegisterParameters(params, "Bowl");
 
-	// crown
+	// crown 1
 	params.m_cubeEdgeLength 		= 1.0f;
 	params.m_cubeDensity 			= 2.0f;
 	params.m_cubeTilt 				= glm::radians(90.0f);
@@ -126,7 +126,17 @@ void simulationParametersSet::PrepareSimulationParameters()
 	params.m_delta 					= 0.001f;
 	params.b_Gravity 				= true;
 
-	RegisterParameters(params, "Crown");
+	RegisterParameters(params, "Crown 1");
+
+	// Crown 2
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(150.0f);
+	params.m_cubeAngularVelocity 	= 15.0f * glm::pi<float>();
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Crown 2");
 
 	// flower
 	params.m_cubeEdgeLength 		= 1.0f;
