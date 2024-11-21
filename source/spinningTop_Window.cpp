@@ -13,8 +13,8 @@
 };
 
 /* static */ const char* spinningTop_Window::c_trajDrawModes[] = {
-	"Lines",
-	"Points"
+	"Points",
+	"Lines"
 };
 
 /* virtual */ void spinningTop_Window::RunInit() /* override */
@@ -243,14 +243,18 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 
 	float itemWidth = ImGui::GetWindowWidth() * 0.2f;
 	
+	m_selectedTrajDrawMode = static_cast<int>(drawParams->b_drawTrajectoryAsLine);
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("##Draw mode", c_trajDrawModes[m_selectedTrajDrawMode])) 
 	{
 		for (int n = 0; n < 2; n++)
 		{
 			bool isSelected = (m_selectedTrajDrawMode == n);
-			if (ImGui::Selectable(c_trajDrawModes[n], isSelected)) 
+			if (ImGui::Selectable(c_trajDrawModes[n], isSelected))
+			{
 				m_selectedTrajDrawMode = n;
+				drawParams->b_drawTrajectoryAsLine = (m_selectedTrajDrawMode != 0);
+			}
 
 			if (isSelected)
 				ImGui::SetItemDefaultFocus();
@@ -258,6 +262,8 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 
 		ImGui::EndCombo();
 	}
+
+	std::cout << drawParams->b_drawTrajectoryAsLine << std::endl;
 	
 	ImGui::SameLine();
 

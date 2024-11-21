@@ -73,7 +73,7 @@ void spinningTop_Renderer::Render(
 		m_shader_traj.Use();
 		m_shader_traj.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
 
-		m_trajBuffer->Draw();		
+		m_trajBuffer->Draw(drawParams->b_drawTrajectoryAsLine);		
 	}
 
 	if (drawParams->b_drawGravitation)
@@ -171,24 +171,6 @@ void spinningTop_Renderer::SetUpScene()
 	
 	// DIAGONAL
 	glGenVertexArrays(1, &m_diagonalVertexArray);
-
-	// TRAJECTORY
-	glGenVertexArrays(1, &m_trajVertexArray);
-	glGenVertexArrays(1, &m_LastLineVertexArray);
-    glGenBuffers(1, &m_trajArrayBuffer);
-	glGenBuffers(1, &m_LastLineElements);
-
-    glBindVertexArray(m_trajVertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-	glBindVertexArray(m_LastLineVertexArray);
-	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
-	glBindVertexArray(0);
 
 	// Gravity
 	glGenVertexArrays(1, &m_quadVertexArray);

@@ -12,7 +12,7 @@ public:
 	trajectoryBuffer(std::size_t initialPointsNum);
 	~trajectoryBuffer();
 
-	void Draw();
+	void Draw(bool drawLines);
 
 	void ReallocateMemory(std::size_t newCapacity);
 	void FreeMemory();
@@ -26,12 +26,14 @@ public:
 	int WritePos();
 	
 	void* GetDataFrom(int pos);
-	void Reset();
+	// void Reset();
 
 private: 
 
 	void ReallocateCPUMemory(std::size_t newCapacity);
 	void ReallocateGPUMemory();
+
+	void SyncCPUGPUBuffers();
 
 	void InitGL(std::size_t initialPointsNum);
 	void DeInitGL();
@@ -45,5 +47,7 @@ private:
 
 	GLuint m_vertexArray;
 	GLuint m_gpu_buffer;
+	int m_gpu_writePos = 0;
 
+	int m_numOfNotSynced = 0;
 };

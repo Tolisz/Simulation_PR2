@@ -13,15 +13,48 @@ trajectoryBuffer::~trajectoryBuffer()
 	DeInitGL();
 }
 
-void trajectoryBuffer::Draw()
+void trajectoryBuffer::Draw(bool drawLines)
 {
 	Lock();
-	ReallocateGPUMemory();
+	SyncCPUGPUBuffers();
 	Unlock();
 
-	glBindVertexArray(m_vertexArray);
-	glDrawArrays(GL_POINTS, 0, Size());
-	glBindVertexArray(0);
+	if (!drawLines) 
+	{
+		glBindVertexArray(m_vertexArray);
+		glDrawArrays(GL_POINTS, 0, Size());
+		glBindVertexArray(0);
+	}
+	else 
+	{
+		if (Size() < Capacity()) 
+		{
+			glBindVertexArray(m_vertexArray);
+			glDrawArrays(GL_LINE_STRIP, 0, m_gpu_writePos);
+			glBindVertexArray(0);
+		}
+		else // Size() == Capacity() -> Cycle 
+		{
+			if (m_gpu_writePos == 0)
+			{
+				glBindVertexArray(m_vertexArray);
+				glDrawArrays(GL_LINE_STRIP, 0, Size());
+				glBindVertexArray(0);
+			}
+			else 
+			{
+				// tail
+				glBindVertexArray(m_vertexArray);
+				glDrawArrays(GL_LINE_STRIP, m_gpu_writePos, Size() - m_gpu_writePos);
+
+				// head 
+				glDrawArrays(GL_LINE_STRIP, 0, m_gpu_writePos);
+				glBindVertexArray(0);
+
+				// link
+			}
+		}
+	}
 }
 
 void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
@@ -160,6 +193,61 @@ void trajectoryBuffer::ReallocateGPUMemory()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void trajectoryBuffer::SyncCPUGPUBuffers()
+{
+	if (Size() < Capacity()) 
+	{
+		size_t size = sizeof(glm::vec3) * (m_cpu_writePos - m_gpu_writePos);
+		size_t offset = sizeof(glm::vec3) * m_gpu_writePos;
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+		glBufferSubData(GL_ARRAY_BUFFER, offset, size, GetDataFrom(m_gpu_writePos));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	else // Size() == Capacity() -> Cycle 
+	{
+		if (m_numOfNotSynced < Size())
+		{
+			if (m_gpu_writePos < m_cpu_writePos) 
+			{
+				size_t size = sizeof(glm::vec3) * (m_cpu_writePos - m_gpu_writePos);
+				size_t offset = sizeof(glm::vec3) * m_gpu_writePos;
+
+				glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+				glBufferSubData(GL_ARRAY_BUFFER, offset, size, GetDataFrom(m_gpu_writePos));
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+			else 
+			{
+				size_t size = sizeof(glm::vec3) * (Size() - m_gpu_writePos);
+				size_t offset = sizeof(glm::vec3) * m_gpu_writePos;
+
+				glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+				glBufferSubData(GL_ARRAY_BUFFER, offset, size, GetDataFrom(m_gpu_writePos));
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+				size = sizeof(glm::vec3) * m_cpu_writePos;
+				offset = 0;
+
+				glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+				glBufferSubData(GL_ARRAY_BUFFER, offset, size, GetDataFrom(0));
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			}
+		}
+		else // m_numOfNotSynced >= Size()
+		{
+			size_t writeSize = sizeof(glm::vec3) * Size();
+			glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, GetDataFrom(0));
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+	}
+
+	m_gpu_writePos = m_cpu_writePos;
+	m_numOfNotSynced = 0;
+}
+
 void trajectoryBuffer::PutPoint(const glm::vec3& point)
 {
 	if (m_cpu_buffer.size() < m_cpu_buffer.capacity())
@@ -172,6 +260,8 @@ void trajectoryBuffer::PutPoint(const glm::vec3& point)
 		m_cpu_buffer[m_cpu_writePos] = point;
 		m_cpu_writePos += 1;
 	}
+
+	m_numOfNotSynced += 1;
 }
 
 void trajectoryBuffer::Lock()
@@ -206,11 +296,11 @@ void* trajectoryBuffer::GetDataFrom(int pos)
 	return static_cast<void*>(start);
 }
 
-void trajectoryBuffer::Reset()
-{
-	m_cpu_buffer.clear();
-	m_cpu_writePos = 0;
-}
+// void trajectoryBuffer::Reset()
+// {
+// 	m_cpu_buffer.clear();
+// 	m_cpu_writePos = 0;
+// }
 
 void trajectoryBuffer::InitGL(std::size_t initialPointsNum)
 {
