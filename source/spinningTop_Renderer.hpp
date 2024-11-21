@@ -16,7 +16,7 @@ class spinningTop_Renderer
 {
 public:
 
-	spinningTop_Renderer();
+	spinningTop_Renderer(std::size_t initialTrajLength);
 	~spinningTop_Renderer();
 
 	spinningTop_Renderer(const spinningTop_Renderer&) = delete;
@@ -34,13 +34,8 @@ public:
 	void UpdateCameraPosition(float delta);
 
 	std::shared_ptr<trajectoryBuffer> GetTrajectoryBuffer();
-	void ReallocateGPUTrajectoryBuffer();
-	void FreeGPUTrajectoryBuffer();
-	bool IsGPUTrajectoryBufferAllocated();
 
 private:
-
-	void SyncGPUTrajectoryBuffer();
 
 	void SetUpFramebuffer(); 
 	void SetUpScene();

@@ -2,19 +2,60 @@
 
 #include <iostream>
 
+trajectoryBuffer::trajectoryBuffer(std::size_t initialPointsNum)
+{
+	InitGL(initialPointsNum);
+	ReallocateMemory(initialPointsNum);
+}
+
+trajectoryBuffer::~trajectoryBuffer()
+{
+	DeInitGL();
+}
+
+void trajectoryBuffer::Draw()
+{
+	Lock();
+	ReallocateGPUMemory();
+	Unlock();
+
+	glBindVertexArray(m_vertexArray);
+	glDrawArrays(GL_POINTS, 0, Size());
+	glBindVertexArray(0);
+}
+
 void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
+{
+	ReallocateCPUMemory(newCapacity);
+	ReallocateGPUMemory();
+}
+
+void trajectoryBuffer::FreeMemory()
+{
+	// CPU buffer free
+	m_cpu_buffer.clear();
+	m_cpu_writePos = 0;
+
+	// GPU buffer free
+	size_t currentCapacity = sizeof(glm::vec3) * Capacity();
+	glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+	glBufferData(GL_ARRAY_BUFFER, currentCapacity, nullptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void trajectoryBuffer::ReallocateCPUMemory(std::size_t newCapacity)
 {	
-	std::size_t oldCapacity = m_buffer.capacity();
-	std::size_t oldSize = m_buffer.size();
+	std::size_t oldCapacity = m_cpu_buffer.capacity();
+	std::size_t oldSize = m_cpu_buffer.size();
 
 	if (oldCapacity == newCapacity)
 	{
 		return;
 	}
 
-	if (m_buffer.capacity() == 0)
+	if (m_cpu_buffer.capacity() == 0)
 	{
-		m_buffer.reserve(newCapacity);
+		m_cpu_buffer.reserve(newCapacity);
 		return;
 	}
 
@@ -25,103 +66,114 @@ void trajectoryBuffer::ReallocateMemory(std::size_t newCapacity)
 	{
 		if (oldSize < oldCapacity) 
 		{
-			auto it_beg = m_buffer.begin();
-			auto it_end = m_buffer.begin();
-			std::advance(it_end, m_WritePos);
+			auto it_beg = m_cpu_buffer.begin();
+			auto it_end = m_cpu_buffer.begin();
+			std::advance(it_end, m_cpu_writePos);
 
 			newBuffer.insert(newBuffer.end(), it_beg, it_end);
 		}
 		else // oldSize == oldCapacity
 		{
-			auto it_beg = m_buffer.begin();
-			std::advance(it_beg, m_WritePos);
-			auto it_end = m_buffer.end();
+			auto it_beg = m_cpu_buffer.begin();
+			std::advance(it_beg, m_cpu_writePos);
+			auto it_end = m_cpu_buffer.end();
 			newBuffer.insert(newBuffer.end(), it_beg, it_end);
 
-			it_beg = m_buffer.begin();
-			it_end = m_buffer.begin();
-			std::advance(it_end, m_WritePos);
+			it_beg = m_cpu_buffer.begin();
+			it_end = m_cpu_buffer.begin();
+			std::advance(it_end, m_cpu_writePos);
 			newBuffer.insert(newBuffer.end(), it_beg, it_end);
 			
-			m_WritePos = newBuffer.size();
+			m_cpu_writePos = newBuffer.size();
 		}
 	}
 	else // oldCapacity > newCapacity  
 	{
 		if (oldSize < oldCapacity) 
 		{
-			if (m_WritePos < newCapacity) 
+			if (m_cpu_writePos < newCapacity) 
 			{
-				auto it_beg = m_buffer.begin();
-				auto it_end = m_buffer.begin();
-				std::advance(it_end, m_WritePos);
+				auto it_beg = m_cpu_buffer.begin();
+				auto it_end = m_cpu_buffer.begin();
+				std::advance(it_end, m_cpu_writePos);
 				
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 			}
-			else // m_WritePos >= newCapacity
+			else // m_cpu_writePos >= newCapacity
 			{
-				int range = m_WritePos - newCapacity;
-				auto it_beg = m_buffer.begin();
+				int range = m_cpu_writePos - newCapacity;
+				auto it_beg = m_cpu_buffer.begin();
 				std::advance(it_beg, range);
-				auto it_end = m_buffer.begin();
-				std::advance(it_end, m_WritePos);
+				auto it_end = m_cpu_buffer.begin();
+				std::advance(it_end, m_cpu_writePos);
 				
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
-				m_WritePos = 0;
+				m_cpu_writePos = 0;
 			}
 		}
 		else // oldSize == oldCapacity
 		{
-			if (m_WritePos < newCapacity) 
+			if (m_cpu_writePos < newCapacity) 
 			{
-				int frontLength = m_WritePos;
+				int frontLength = m_cpu_writePos;
 				int backLength = newCapacity - frontLength;
 				int to_back = oldCapacity - backLength;
 
-				auto it_beg = m_buffer.begin();
-				auto it_end = m_buffer.begin();
+				auto it_beg = m_cpu_buffer.begin();
+				auto it_end = m_cpu_buffer.begin();
 				std::advance(it_end, frontLength);
 				auto start = newBuffer.begin();
 				std::advance(start, backLength);
 
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
 
-				it_beg = m_buffer.begin();
+				it_beg = m_cpu_buffer.begin();
 				std::advance(it_beg, to_back);
-				it_end = m_buffer.end();
+				it_end = m_cpu_buffer.end();
 				start = newBuffer.begin();
 
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
-				m_WritePos = 0;
+				m_cpu_writePos = 0;
 			}
-			else // m_WritePos >= newCapacity
+			else // m_cpu_writePos >= newCapacity
 			{
-				int range = m_WritePos - newCapacity;
-				auto it_beg = m_buffer.begin();
+				int range = m_cpu_writePos - newCapacity;
+				auto it_beg = m_cpu_buffer.begin();
 				std::advance(it_beg, range);
-				auto it_end = m_buffer.begin();
-				std::advance(it_end, m_WritePos);
+				auto it_end = m_cpu_buffer.begin();
+				std::advance(it_end, m_cpu_writePos);
 				
 				newBuffer.insert(newBuffer.end(), it_beg, it_end);
-				m_WritePos = 0;
+				m_cpu_writePos = 0;
 			}
 		}
 	}
 	
-	m_buffer = std::move(newBuffer);
+	m_cpu_buffer = std::move(newBuffer);
+}
+
+void trajectoryBuffer::ReallocateGPUMemory()
+{
+	size_t newCapacity = sizeof(glm::vec3) * Capacity();
+	size_t writeSize = sizeof(glm::vec3) * Size();
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+	glBufferData(GL_ARRAY_BUFFER, newCapacity, nullptr, GL_DYNAMIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, GetDataFrom(0));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void trajectoryBuffer::PutPoint(const glm::vec3& point)
 {
-	if (m_buffer.size() < m_buffer.capacity())
+	if (m_cpu_buffer.size() < m_cpu_buffer.capacity())
 	{
-		m_buffer.push_back(point);
-		m_WritePos += 1;
+		m_cpu_buffer.push_back(point);
+		m_cpu_writePos += 1;
 	}
 	else {
-		m_WritePos %= m_buffer.size();
-		m_buffer[m_WritePos] = point;
-		m_WritePos += 1;
+		m_cpu_writePos %= m_cpu_buffer.size();
+		m_cpu_buffer[m_cpu_writePos] = point;
+		m_cpu_writePos += 1;
 	}
 }
 
@@ -137,28 +189,46 @@ void trajectoryBuffer::Unlock()
 
 std::size_t trajectoryBuffer::Capacity()
 {
-	return m_buffer.capacity();
+	return m_cpu_buffer.capacity();
 }
 
 std::size_t trajectoryBuffer::Size()
 {
-	return m_buffer.size();
+	return m_cpu_buffer.size();
 }
 
 int trajectoryBuffer::WritePos()
 {
-	return m_WritePos; 
+	return m_cpu_writePos; 
 }
 
 void* trajectoryBuffer::GetDataFrom(int pos)
 {
-	glm::vec3* start = m_buffer.data();
+	glm::vec3* start = m_cpu_buffer.data();
 	start += pos;
 	return static_cast<void*>(start);
 }
 
 void trajectoryBuffer::Reset()
 {
-	m_buffer.clear();
-	m_WritePos = 0;
+	m_cpu_buffer.clear();
+	m_cpu_writePos = 0;
+}
+
+void trajectoryBuffer::InitGL(std::size_t initialPointsNum)
+{
+	glCreateVertexArrays(1, &m_vertexArray);
+	glCreateBuffers(1, &m_gpu_buffer);
+
+    glBindVertexArray(m_vertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, m_gpu_buffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+}
+
+void trajectoryBuffer::DeInitGL()
+{
+	glDeleteVertexArrays(1, &m_vertexArray);
+	glDeleteBuffers(1, &m_gpu_buffer);
 }

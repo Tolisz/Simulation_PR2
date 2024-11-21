@@ -75,5 +75,8 @@ private:
     static const char* c_angleTypes[];
     int m_selectedAngVelAngleType = 0;
 
+    static const char* c_trajDrawModes[];
+    int m_selectedTrajDrawMode = 0;
+
     std::unique_ptr<spinningTop_App> m_app;
 };

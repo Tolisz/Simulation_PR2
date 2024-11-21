@@ -12,6 +12,11 @@
 	"rad"
 };
 
+/* static */ const char* spinningTop_Window::c_trajDrawModes[] = {
+	"Lines",
+	"Points"
+};
+
 /* virtual */ void spinningTop_Window::RunInit() /* override */
 {
 	glfwSwapInterval(0);
@@ -236,9 +241,28 @@ void spinningTop_Window::GUI_SEC_DrawOptions()
 	GUI_ELEM_DrawCheckbox("Gravitation", drawParams->m_colorGravitation, drawParams->b_drawGravitation);
 	GUI_ELEM_DrawCheckbox("Corner's trajectory", drawParams->m_colorTrajectory, drawParams->b_drawTrajectory);
 
-	float itemWidth = ImGui::GetWindowWidth() * 0.4f;
+	float itemWidth = ImGui::GetWindowWidth() * 0.2f;
+	
 	ImGui::SetNextItemWidth(itemWidth);
-	ImGui::DragInt("Number of trajectorys' points", &drawParams->m_trajectoryPointsNum, 20, 100, 100000, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::BeginCombo("##Draw mode", c_trajDrawModes[m_selectedTrajDrawMode])) 
+	{
+		for (int n = 0; n < 2; n++)
+		{
+			bool isSelected = (m_selectedTrajDrawMode == n);
+			if (ImGui::Selectable(c_trajDrawModes[n], isSelected)) 
+				m_selectedTrajDrawMode = n;
+
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		ImGui::EndCombo();
+	}
+	
+	ImGui::SameLine();
+
+	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::DragInt("Trajectory's draw mode / length", &drawParams->m_trajectoryPointsNum, 20, 200, 100000, "%d", ImGuiSliderFlags_AlwaysClamp);
 	if (b_TrajectoryNumberChanging == true && ImGui::IsItemActive() == false)
 	{
 		m_app->SetNewTrajectoryBufferSize(drawParams->m_trajectoryPointsNum);

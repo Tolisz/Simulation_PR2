@@ -18,4 +18,5 @@ struct drawParameters
 	bool b_drawTrajectory 	= true;
 	bool b_drawGravitation  = true;	
 
+	bool b_drawTrajectoryAsLine = true;
 };

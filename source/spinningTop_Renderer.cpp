@@ -4,12 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
-spinningTop_Renderer::spinningTop_Renderer()
+spinningTop_Renderer::spinningTop_Renderer(std::size_t initialTrajLength)
 {
 	SetUpFramebuffer();
 	SetUpScene();
 	
-	m_trajBuffer = std::make_shared<trajectoryBuffer>();
+	m_trajBuffer = std::make_shared<trajectoryBuffer>(initialTrajLength);
 
 	m_camera.m_worldPos = glm::vec3(0.0f, 0.0f, 6.0f);
 	m_camera.UpdateRotation(glm::radians(40.0f), -glm::radians(40.0f));
@@ -70,26 +70,10 @@ void spinningTop_Renderer::Render(
 
 	if (drawParams->b_drawTrajectory)
 	{
-		SyncGPUTrajectoryBuffer();
-
 		m_shader_traj.Use();
 		m_shader_traj.set4fv("trajectoryColor", drawParams->m_colorTrajectory);
 
-		if (!b_trajDrawDifferently)
-		{
-			glBindVertexArray(m_trajVertexArray);
-			glDrawArrays(GL_POINTS, 0, m_trajDrawSize - 1);
-		}
-		else 
-		{
-			glBindVertexArray(m_trajVertexArray);
-			glDrawArrays(GL_LINE_STRIP, m_trajGPUPos, m_trajDrawSize - m_trajGPUPos);
-			glDrawArrays(GL_LINE_STRIP, 0, m_trajGPUPos);
-
-			// glBindVertexArray(m_LastLineVertexArray);
-			// glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
-		}
-		
+		m_trajBuffer->Draw();		
 	}
 
 	if (drawParams->b_drawGravitation)
@@ -151,83 +135,6 @@ void spinningTop_Renderer::UpdateCameraPosition(float delta)
 std::shared_ptr<trajectoryBuffer> spinningTop_Renderer::GetTrajectoryBuffer()
 {
 	return m_trajBuffer;
-}
-
-void spinningTop_Renderer::ReallocateGPUTrajectoryBuffer()
-{
-	size_t gpuBuffSize = sizeof(glm::vec3) * m_trajBuffer->Capacity();
-	size_t writeSize = sizeof(glm::vec3) * m_trajBuffer->Size();
-	m_trajDrawSize =  m_trajBuffer->Size();
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-	glBufferData(GL_ARRAY_BUFFER, gpuBuffSize, nullptr, GL_DYNAMIC_DRAW);
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, writeSize, m_trajBuffer->GetDataFrom(0));
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_LastLineElements);
-	unsigned int indices[] = {m_trajBuffer->Size() - 2, m_trajBuffer->Size() - 1}; 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	b_trajGPUbufferAllocated = true;
-}
-
-void spinningTop_Renderer::FreeGPUTrajectoryBuffer()
-{
-	m_trajDrawSize = 0;
-	m_trajGPUPos = 0;
-	b_trajDrawDifferently = false;
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-	b_trajGPUbufferAllocated = false;
-
-	m_trajBuffer->Reset();
-}
-
-bool spinningTop_Renderer::IsGPUTrajectoryBufferAllocated()
-{
-	return b_trajGPUbufferAllocated;
-}
-
-void spinningTop_Renderer::SyncGPUTrajectoryBuffer()
-{
-	m_trajBuffer->Lock();
-
-	ReallocateGPUTrajectoryBuffer();
-
-	// int Pos = m_trajBuffer->WritePos();
-	// if (Pos > m_trajGPUPos) 
-	// {
-	// 	size_t writeSize = sizeof(glm::vec3) * (Pos - m_trajGPUPos);
-	// 	size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
-
-	// 	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-	// 	glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
-	// }
-	// else if (Pos < m_trajGPUPos)
-	// {
-	// 	b_trajDrawDifferently = true;
-
-	// 	size_t writeSize = sizeof(glm::vec3) * (m_trajGPUPos - m_trajBuffer->Size());
-	// 	size_t offset = sizeof(glm::vec3) * m_trajGPUPos;
-
-	// 	glBindBuffer(GL_ARRAY_BUFFER, m_trajArrayBuffer);
-	// 	glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(m_trajGPUPos));
-
-	// 	writeSize = sizeof(glm::vec3) * Pos;
-	// 	offset = 0;
-	// 	glBufferSubData(GL_ARRAY_BUFFER, offset, writeSize, m_trajBuffer->GetDataFrom(0));
-
-		
-	// 	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_LastLineElements);
-	// 	// unsigned int indices[] = {0, m_trajBuffer->Size() - 1}; 
-	// 	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	// }
-
-	// m_trajGPUPos = m_trajBuffer->WritePos();
-
-	// m_trajDrawSize = m_trajBuffer->Size();
-	m_trajBuffer->Unlock();
 }
 
 void spinningTop_Renderer::SetUpFramebuffer()
