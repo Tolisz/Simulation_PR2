@@ -12,7 +12,7 @@ spinningTop_Renderer::spinningTop_Renderer(std::size_t initialTrajLength)
 	m_trajBuffer = std::make_shared<trajectoryBuffer>(initialTrajLength);
 
 	m_camera.m_worldPos = glm::vec3(0.0f, 0.0f, 6.0f);
-	m_camera.UpdateRotation(glm::radians(40.0f), -glm::radians(40.0f));
+	// m_camera.UpdateRotation(glm::radians(40.0f), -glm::radians(40.0f));
 }
 
 spinningTop_Renderer::~spinningTop_Renderer()
@@ -26,10 +26,11 @@ void spinningTop_Renderer::Render(
 	std::shared_ptr<const drawParameters> 	drawParams, 
 	const simulationDrawParameters& 		simResult)
 {
+
 	glEnable(GL_DEPTH_TEST);
-	glEnable( GL_BLEND );
-	
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable( GL_BLEND );
+
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 	
 	glViewport(0, 0, m_sceneSize.x, m_sceneSize.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
@@ -44,16 +45,26 @@ void spinningTop_Renderer::Render(
 		glm::scale(glm::mat4(1.0f), glm::vec3(simResult.m_cubeEdgeLength)) *
 		m_cubeInitModelMatrix;
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_CULL_FACE);
 	if (drawParams->b_drawCube)
 	{
 		m_shader_cube.Use();
-		m_shader_cube.set4fv("objectColor", drawParams->m_colorCube);
+		m_shader_cube.set4fv("cubeColor", drawParams->m_colorCube);
+
+		const material& mat = m_materials["cube"]; 
+		m_shader_cube.set3fv("material.ka", mat.ka);
+		m_shader_cube.set3fv("material.kd", mat.kd);
+		m_shader_cube.set3fv("material.ks", mat.ks);
+		m_shader_cube.set1f("material.shininess", mat.shininess);
+
+		m_shader_cube.set3fv("cameraPos", m_camera.m_worldPos);
 
 		m_shader_cube.setM4fv("model", false, model);
 		m_cube->Draw();
 	}
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_CULL_FACE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	if (drawParams->b_drawDiagonal)
 	{
@@ -205,12 +216,21 @@ void spinningTop_Renderer::SetUpScene()
 	m_shader_gravityQuad.Use();
 	m_shader_gravityQuad.set1i("numberOfLights", 1);
 
+	m_shader_cube.Use();
+	m_shader_cube.set1i("numberOfLights", 1);
+
 	material m; 
 	m.ka = glm::vec3(0.2f);
     m.kd = glm::vec3(1.0f);
     m.ks = glm::vec3(0.5f);
     m.shininess = 256.0f;
 	m_materials.insert(std::make_pair("quad", m));
+
+	m.ka = glm::vec3(0.2f);
+    m.kd = glm::vec3(1.0f);
+    m.ks = glm::vec3(0.0f);
+    m.shininess = 256.0f;
+	m_materials.insert(std::make_pair("cube", m));
 }
 
 void spinningTop_Renderer::PrepareShaders()

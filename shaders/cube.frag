@@ -15,21 +15,26 @@ layout(location = 0) out vec4 oColor;
 struct Light
 {
     vec4 position;
-	vec4 ambientColor;
     vec4 diffuseColor;
     vec4 specularColor;
 };
+
 struct Material
 {
     vec3 ka, kd, ks;
     float shininess;
 };
 
-uniform Light light;
+layout(std140, binding = 1) uniform LightsBlock {
+    vec4 ambientColor;
+    Light light[MAX_NUM_OF_LIGHTS];
+};
+uniform int numberOfLights;
+
 uniform Material material;
-uniform vec4 objectColor;
 uniform vec3 cameraPos;
 
+uniform vec4 cubeColor;
 
 vec3 Phong(vec3 worldPos, vec3 norm, vec3 view, vec3 surfaceColor)
 {
@@ -37,24 +42,25 @@ vec3 Phong(vec3 worldPos, vec3 norm, vec3 view, vec3 surfaceColor)
     vec3 V = normalize(view);
 
     // ambient 
-    vec3 color = material.ka * light.ambientColor.rgb;
+    vec3 color = material.ka * ambientColor.rgb;
 
-	// diffuse 
-	vec3 L = normalize(light.position.xyz - worldPos);
-	color += material.kd * light.diffuseColor.rgb * surfaceColor * max(dot(N, L), 0.0f);
+    for (int i = 0; i < min(numberOfLights, MAX_NUM_OF_LIGHTS); i++) {
+        // diffuse 
+        vec3 L = normalize(light[i].position.xyz - worldPos);
+        color += material.kd * light[i].diffuseColor.rgb * surfaceColor * max(dot(N, L), 0.0f);
 
-	// specular
-	vec3 R = reflect(-L, N);
-	color += material.ks * light.specularColor.rgb * pow(max(dot(R, V), 0.0f), material.shininess);
+        // specular
+        vec3 R = reflect(-L, N);
+        color += material.ks * light[i].specularColor.rgb * pow(max(dot(R, V), 0.0f), material.shininess);
+    }
 
     return color;
 }
 
-
 void main()
 {
-	// vec3 view = normalize(cameraPos - i.worldPos);
-	vec3 color = objectColor.rgb; // Phong(i.worldPos, N, view, objectColor);
-	
-	oColor = vec4(color, 1.0f);
+	vec3 view = normalize(cameraPos - i.worldPos);
+	vec3 phongColor = Phong(i.worldPos, i.norm, view, cubeColor.rgb);
+
+	oColor = vec4(phongColor, cubeColor.a);
 }
