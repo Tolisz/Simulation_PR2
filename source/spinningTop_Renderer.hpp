@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <memory>
+#include <map>
 #include "camera.hpp"
 #include "shader.hpp"
 #include "uniformBufferObject.hpp"
@@ -10,7 +11,8 @@
 #include "drawParameters.hpp"
 #include "simulationParameters.hpp"
 #include "trajectoryBuffer.hpp"
-
+#include "light.hpp"
+#include "material.hpp"
 
 class spinningTop_Renderer
 {
@@ -37,6 +39,8 @@ public:
 
 private:
 
+	void UpdateUBOs(float lightHeight);
+
 	void SetUpFramebuffer(); 
 	void SetUpScene();
 
@@ -50,7 +54,15 @@ private:
 	GLuint m_Renderbuffer;
 	GLuint m_colorTexture;
 
-	uniformBufferObject m_UBO_Matrices; 
+	uniformBufferObject m_matricesUBO; 
+
+	const int c_maxLights = 5;
+	uniformBufferObject m_lightsUBO;
+
+	glm::vec4 m_ambientColor = glm::vec4(1.0f);
+	light m_singleLight;
+
+	std::map<std::string, material> m_materials;
 
 	// Cube
 	shader m_shader_cube;

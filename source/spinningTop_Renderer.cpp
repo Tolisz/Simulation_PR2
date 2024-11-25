@@ -34,11 +34,7 @@ void spinningTop_Renderer::Render(
 	glViewport(0, 0, m_sceneSize.x, m_sceneSize.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
 
-    float aspect = static_cast<float>(m_sceneSize.x)/m_sceneSize.y;
-    glm::mat4 viewProj[2] = {m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix(aspect)};
-
-	m_UBO_Matrices.BindUBO();
-	m_UBO_Matrices.SetBufferData(0, viewProj, 2 * sizeof(glm::mat4));
+	UpdateUBOs(1.5f * glm::sqrt(3.0f) * simResult.m_cubeEdgeLength);
 
 	glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -76,12 +72,21 @@ void spinningTop_Renderer::Render(
 		m_trajBuffer->Draw(drawParams->b_drawTrajectoryAsLine);		
 	}
 
+	// GRAVITATION
 	if (drawParams->b_drawGravitation)
 	{
 		// Quad
 		m_shader_gravityQuad.Use();
 		m_shader_gravityQuad.set4fv("GravitationColor", drawParams->m_colorGravitation);
 		
+		const material& mat = m_materials["quad"]; 
+		m_shader_gravityQuad.set3fv("material.ka", mat.ka);
+		m_shader_gravityQuad.set3fv("material.kd", mat.kd);
+		m_shader_gravityQuad.set3fv("material.ks", mat.ks);
+		m_shader_gravityQuad.set1f("material.shininess", mat.shininess);
+
+		m_shader_gravityQuad.set3fv("cameraPos", m_camera.m_worldPos);
+
 		glBindVertexArray(m_quadVertexArray);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -137,6 +142,22 @@ std::shared_ptr<trajectoryBuffer> spinningTop_Renderer::GetTrajectoryBuffer()
 	return m_trajBuffer;
 }
 
+void spinningTop_Renderer::UpdateUBOs(float lightHeight)
+{
+	// Matrices
+    float aspect = static_cast<float>(m_sceneSize.x)/m_sceneSize.y;
+    glm::mat4 viewProj[2] = {m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix(aspect)};
+
+	m_matricesUBO.BindUBO();
+	m_matricesUBO.SetBufferData(0, viewProj, 2 * sizeof(glm::mat4));
+
+	// Lights
+	m_singleLight.m_position = glm::vec4(0.0f, lightHeight, 0.0f, 1.0f);
+	m_lightsUBO.BindUBO();
+	m_lightsUBO.SetBufferData(0, &m_ambientColor, sizeof(glm::vec4));
+    m_lightsUBO.SetBufferData(sizeof(glm::vec4), &m_singleLight, 3 * sizeof(glm::vec4));
+}
+
 void spinningTop_Renderer::SetUpFramebuffer()
 {
 	glGenFramebuffers(1, &m_Framebuffer);
@@ -175,6 +196,21 @@ void spinningTop_Renderer::SetUpScene()
 	// Gravity
 	glGenVertexArrays(1, &m_quadVertexArray);
 	glGenVertexArrays(1, &m_forceVertexArray);
+
+	// Light and material
+    m_singleLight.m_diffuseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_singleLight.m_specularColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// Shader Update
+	m_shader_gravityQuad.Use();
+	m_shader_gravityQuad.set1i("numberOfLights", 1);
+
+	material m; 
+	m.ka = glm::vec3(0.2f);
+    m.kd = glm::vec3(1.0f);
+    m.ks = glm::vec3(0.5f);
+    m.shininess = 256.0f;
+	m_materials.insert(std::make_pair("quad", m));
 }
 
 void spinningTop_Renderer::PrepareShaders()
@@ -204,6 +240,11 @@ void spinningTop_Renderer::PrepareShaders()
 	m_shader_gravityForce.AttachShader("./shaders/force.frag", GL_FRAGMENT_SHADER);
 	m_shader_gravityForce.Link();
 
-	m_UBO_Matrices.CreateUBO(2 * sizeof(glm::mat4));
-    m_UBO_Matrices.BindBufferBaseToBindingPoint(0);
+	// Matrices
+	m_matricesUBO.CreateUBO(2 * sizeof(glm::mat4));
+    m_matricesUBO.BindBufferBaseToBindingPoint(0);
+
+	// Lights
+	m_lightsUBO.CreateUBO((1 + 3 * c_maxLights) * sizeof(glm::vec4));
+	m_lightsUBO.BindBufferBaseToBindingPoint(1);
 }
