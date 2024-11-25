@@ -43,8 +43,7 @@ private:
 
 	void DrawCube(
 		const glm::mat4& model, 
-		std::shared_ptr<const drawParameters> 	drawParams,
-		const simulationDrawParameters& 		simResult);
+		std::shared_ptr<const drawParameters> 	drawParams);
 
 	void DrawGravitation(
 		const glm::mat4& model, 

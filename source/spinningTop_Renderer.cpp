@@ -44,13 +44,13 @@ void spinningTop_Renderer::Render(
 
 	if (glm::dot(m_camera.m_front, glm::vec3(0.0f, 1.0f, 0.0f)) > 0)
 	{
-		DrawCube(model, drawParams, simResult);	
+		DrawCube(model, drawParams);	
 		DrawGravitation(model, drawParams, simResult);
 	}
 	else 
 	{
 		DrawGravitation(model, drawParams, simResult);
-		DrawCube(model, drawParams, simResult);
+		DrawCube(model, drawParams);
 	}
 
 	if (drawParams->b_drawDiagonal)
@@ -129,8 +129,7 @@ void spinningTop_Renderer::UpdateUBOs(float a)
 
 void spinningTop_Renderer::DrawCube(
 	const glm::mat4& model, 
-	std::shared_ptr<const drawParameters> 	drawParams,
-	const simulationDrawParameters& 		simResult)
+	std::shared_ptr<const drawParameters> 	drawParams)
 {
 	glEnable(GL_CULL_FACE);
 	if (drawParams->b_drawCube)
@@ -212,7 +211,7 @@ void spinningTop_Renderer::SetUpScene()
 	// CUBE
 	m_cube = std::make_unique<obj_cube>();
 
-	float xRot = -glm::acos(glm::sqrt(3) / 3);
+	float xRot = -glm::acos(glm::sqrt(3.0f) / 3.0f);
 	m_cubeInitModelMatrix =
 		glm::rotate(glm::mat4(1.0f), xRot, {1.0f, 0.0f, 0.0f}) * 
 		glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), {0.0f, 1.0f, 0.0f}) * 
@@ -241,10 +240,10 @@ void spinningTop_Renderer::SetUpScene()
 
 	// Shader Update
 	m_shader_gravityQuad.Use();
-	m_shader_gravityQuad.set1i("numberOfLights", m_lights.size());
+	m_shader_gravityQuad.set1i("numberOfLights", static_cast<GLint>(m_lights.size()));
 
 	m_shader_cube.Use();
-	m_shader_cube.set1i("numberOfLights", m_lights.size());
+	m_shader_cube.set1i("numberOfLights", static_cast<GLint>(m_lights.size()));
 
 	material m; 
 	m.ka = glm::vec3(0.2f);

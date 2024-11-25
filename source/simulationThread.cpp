@@ -97,7 +97,7 @@ void simulationThread::PrepareSimulationValues(std::shared_ptr<const simulationP
 	m_Q = glm::angleAxis(params->m_cubeTilt, glm::vec3({0.0f, 0.0f, 1.0f}));
 	m_W = glm::vec3(0.0f, params->m_cubeAngularVelocity, 0.0f);
 
-	m_diag = a * glm::sqrt(3);
+	m_diag = a * glm::sqrt(3.0f);
 	m_cornerPoint = glm::vec3(0.0f, m_diag, 0.0f);
 	m_dt = params->m_delta;
 }
@@ -136,7 +136,7 @@ void simulationThread::SimulationThread()
 
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> t = now - START;
-		int N_theoretical = t.count() / static_cast<double>(m_dt);
+		int N_theoretical = static_cast<int>(t.count() / static_cast<double>(m_dt));
 		
 		auto end = N_theoretical > N ? now : now + DELTA * (N - N_theoretical);
 		

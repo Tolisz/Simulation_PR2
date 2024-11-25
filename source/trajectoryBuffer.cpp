@@ -4,7 +4,7 @@
 
 trajectoryBuffer::trajectoryBuffer(std::size_t initialPointsNum)
 {
-	InitGL(initialPointsNum);
+	InitGL();
 	ReallocateMemory(initialPointsNum);
 }
 
@@ -22,7 +22,7 @@ void trajectoryBuffer::Draw(bool drawLines)
 	if (!drawLines) 
 	{
 		glBindVertexArray(m_vertexArray);
-		glDrawArrays(GL_POINTS, 0, Size());
+		glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(Size()));
 		glBindVertexArray(0);
 	}
 	else 
@@ -39,7 +39,7 @@ void trajectoryBuffer::Draw(bool drawLines)
 			{
 				// draw whole array.
 				glBindVertexArray(m_vertexArray);
-				glDrawArrays(GL_LINE_STRIP, 0, Capacity());
+				glDrawArrays(GL_LINE_STRIP, 0, static_cast<GLsizei>(Capacity()));
 			}
 			else 
 			{
@@ -306,7 +306,7 @@ void* trajectoryBuffer::GetDataFrom(int pos)
 	return static_cast<void*>(start);
 }
 
-void trajectoryBuffer::InitGL(std::size_t initialPointsNum)
+void trajectoryBuffer::InitGL()
 {
 	// For main lines
 	glCreateVertexArrays(1, &m_vertexArray);

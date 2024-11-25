@@ -65,20 +65,20 @@ void spinningTop_Window::GLFW_SetUpCallbacks()
 {
 	spinningTop_Window* w = GLFW_GetWindow(window);
 	
-	bool leftClick = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
-	bool rightClick = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
-	
+	float fxpos = static_cast<float>(xpos);
+	float fypos = static_cast<float>(ypos);
+
 	if (w->m_renderInterationState == RenderWindowInteration::None)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-    	io.AddMousePosEvent(xpos, ypos);
+    	io.AddMousePosEvent(fxpos, fypos);
 		return;
 	}
 
-	float deltaX = xpos - w->m_lastMousePos.x;
-	float deltaY = ypos - w->m_lastMousePos.y;
-	w->m_lastMousePos.x = xpos;
-	w->m_lastMousePos.y = ypos;
+	float deltaX = fxpos - w->m_lastMousePos.x;
+	float deltaY = fypos - w->m_lastMousePos.y;
+	w->m_lastMousePos.x = fxpos;
+	w->m_lastMousePos.y = fypos;
 
 	float speed = w->m_cameraSpeed;
 	switch (w->m_renderInterationState)
@@ -115,7 +115,7 @@ void spinningTop_Window::GLFW_SetUpCallbacks()
 
 }	
 
-/* static */ void spinningTop_Window::GLFW_Callback_MouseButton_Left(spinningTop_Window* w, int action, int mods)
+/* static */ void spinningTop_Window::GLFW_Callback_MouseButton_Left(spinningTop_Window* w, int action, int /* mods */)
 {
 	if (action == GLFW_PRESS)
 	{
@@ -131,7 +131,7 @@ void spinningTop_Window::GLFW_SetUpCallbacks()
 	}
 }
 
-/* static */ void spinningTop_Window::GLFW_Callback_MouseButton_Right(spinningTop_Window* w, int action, int mods)
+/* static */ void spinningTop_Window::GLFW_Callback_MouseButton_Right(spinningTop_Window* w, int action, int /* mods */)
 {
 	if (action == GLFW_PRESS)
 	{
@@ -165,7 +165,7 @@ void spinningTop_Window::GUI_Main()
 	GUI_WindowLayout();
 
 	// DEBUG ONLY !!!!!!!!!!!!
-	static bool show_demo_window = false;
+	static bool show_demo_window = true;
 	if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 }
@@ -393,7 +393,6 @@ void spinningTop_Window::GUI_SEC_SimulationActions()
 	float padding = ImGui::GetStyle().WindowPadding.x;
 	float spacing = ImGui::GetStyle().ItemSpacing.x;
 	float buttonWidth = (win_width - 2 * padding - 2 * spacing) / 3.0f;
-	float sliderWidth = 2 * buttonWidth + spacing; 
 	ImVec2 buttonSize{buttonWidth, 40.0f};	
 
 	bool isSimulationRun = m_app->IsRunning();
@@ -428,8 +427,6 @@ void spinningTop_Window::GUI_SEC_MiscellaneousInfo()
 	ImGui::SeparatorText("Miscellaneous Information");
 
 	float win_width = ImGui::GetWindowWidth();
-	float padding = ImGui::GetStyle().WindowPadding.x;
-	float counterWidth = 80.0f + padding;
 	
 	ImGui::BeginDisabled(!b_limitFPS);
 

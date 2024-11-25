@@ -34,7 +34,7 @@ private:
 
 	void SyncCPUGPUBuffers();
 
-	void InitGL(std::size_t initialPointsNum);
+	void InitGL();
 	void DeInitGL();
 
 private:

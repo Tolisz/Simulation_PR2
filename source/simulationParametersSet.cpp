@@ -148,6 +148,16 @@ void simulationParametersSet::PrepareSimulationParameters()
 
 	RegisterParameters(params, "Flower");
 
+	// star
+	params.m_cubeEdgeLength 		= 1.0f;
+	params.m_cubeDensity 			= 2.0f;
+	params.m_cubeTilt 				= glm::radians(165.0f);
+	params.m_cubeAngularVelocity 	= glm::radians(395.0f);
+	params.m_delta 					= 0.001f;
+	params.b_Gravity 				= true;
+
+	RegisterParameters(params, "Star");
+
 }
 
 void simulationParametersSet::RegisterParameters(
