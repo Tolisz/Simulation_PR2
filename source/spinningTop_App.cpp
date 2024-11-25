@@ -42,12 +42,6 @@ void spinningTop_App::StartSimulation()
 	{
 	case State::Initial:
 		m_state = State::Running;
-		
-		// if (!m_renderer->IsGPUTrajectoryBufferAllocated())
-		// {
-		// 	m_renderer->ReallocateGPUTrajectoryBuffer();
-		// }
-
 		m_simThread->StartSimulation(m_paramsSimulation);
 		break;
 	

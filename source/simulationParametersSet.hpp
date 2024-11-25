@@ -11,7 +11,7 @@ class simulationParametersSet
 public:
 
 	simulationParametersSet();
-	~simulationParametersSet();
+	~simulationParametersSet() = default;
 
 	simulationParametersSet(const simulationParametersSet&) = delete;
 	simulationParametersSet(simulationParametersSet&&) = delete;

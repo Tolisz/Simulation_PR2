@@ -5,11 +5,6 @@ simulationParametersSet::simulationParametersSet()
 	PrepareSimulationParameters();
 }
 
-simulationParametersSet::~simulationParametersSet()
-{
-
-}
-
 simulationParameters simulationParametersSet::GetParametersByID(const int& id)
 {
 	return m_ID_to_Params.at(id);
