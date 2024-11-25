@@ -12,7 +12,7 @@ spinningTop_Renderer::spinningTop_Renderer(std::size_t initialTrajLength)
 	m_trajBuffer = std::make_shared<trajectoryBuffer>(initialTrajLength);
 
 	m_camera.m_worldPos = glm::vec3(0.0f, 0.0f, 6.0f);
-	// m_camera.UpdateRotation(glm::radians(40.0f), -glm::radians(40.0f));
+	m_camera.UpdateRotation(glm::radians(40.0f), -glm::radians(40.0f));
 }
 
 spinningTop_Renderer::~spinningTop_Renderer()
@@ -26,9 +26,6 @@ void spinningTop_Renderer::Render(
 	std::shared_ptr<const drawParameters> 	drawParams, 
 	const simulationDrawParameters& 		simResult)
 {
-
-	glEnable(GL_DEPTH_TEST);
-
 	glEnable( GL_BLEND );
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 	
