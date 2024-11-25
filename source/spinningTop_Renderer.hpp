@@ -39,12 +39,25 @@ public:
 
 private:
 
-	void UpdateUBOs(float lightHeight);
+	void UpdateUBOs(float a);
+
+	void DrawCube(
+		const glm::mat4& model, 
+		std::shared_ptr<const drawParameters> 	drawParams,
+		const simulationDrawParameters& 		simResult);
+
+	void DrawGravitation(
+		const glm::mat4& model, 
+		std::shared_ptr<const drawParameters> 	drawParams,
+		const simulationDrawParameters& 		simResult);
 
 	void SetUpFramebuffer(); 
 	void SetUpScene();
 
 	void PrepareShaders();
+
+	void UpdateLightPositions(float a);
+
 private:
 
 	camera 		m_camera;
@@ -60,7 +73,7 @@ private:
 	uniformBufferObject m_lightsUBO;
 
 	glm::vec4 m_ambientColor = glm::vec4(1.0f);
-	light m_singleLight;
+	std::vector<light> m_lights;
 
 	std::map<std::string, material> m_materials;
 
