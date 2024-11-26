@@ -11,10 +11,10 @@ add_subdirectory(utils)
 
 # ===============================
 
-set(PR2_LINK_LIBS 	PUBLIC glm
-              		PUBLIC glfw
-              		PUBLIC glad
-					PUBLIC imgui)
+set(PR2_LINK_LIBS 	PRIVATE glm
+              		PRIVATE glfw
+              		PRIVATE glad
+					PRIVATE imgui)
 
 set(PR2_EXECUTABLE_NAME SimulationPr2)
 file(GLOB RP2_SOURCE_FILES source/*.cpp)
@@ -27,6 +27,8 @@ if (PR2_EMBEDDED_SHADERS)
 
 	target_compile_definitions(${PR2_EXECUTABLE_NAME} PRIVATE "EMBEDDED_SHADERS")
     shaders_to_embedded_hpp(${PR2_EXECUTABLE_NAME} ${CMAKE_SOURCE_DIR}/shaders)
+else()
+	message("-- RP2: PR2_EMBEDDED_SHADERS option is OFF")
 endif()
 
 if (MSVC)
@@ -37,6 +39,8 @@ if (MSVC)
 		message("-- RP2: PR2_SHOW_DEBUG_CONSOLE option is OFF")
 		set_target_properties(${PR2_EXECUTABLE_NAME} PROPERTIES 
 			LINK_FLAGS "/ENTRY:mainCRTStartup /SUBSYSTEM:WINDOWS")
+	else() 
+		message("-- RP2: PR2_SHOW_DEBUG_CONSOLE option is ON")
 	endif()
 
 else()
