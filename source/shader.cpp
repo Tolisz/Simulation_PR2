@@ -48,7 +48,7 @@ void shader::Init()
     m_ID = glCreateProgram();
 }
 
-void shader::AttachShader(const std::string& path, GLenum type)
+void shader::AttachShader(const std::string& path, GLenum type, bool embeddedString)
 {
     if (!m_bIsInit) {
         std::cout 
@@ -59,7 +59,7 @@ void shader::AttachShader(const std::string& path, GLenum type)
     }
 
     GLuint sh = glCreateShader(type);
-    std::string source = ReadShaderCode(path);
+    std::string source = embeddedString ? path : ReadShaderCode(path);
     const char* source_c = source.c_str();
     glShaderSource(sh, 1, &source_c, NULL);
     glCompileShader(sh);

@@ -30,7 +30,7 @@ public:
     // *=*=*=*=*=*=*=*=*=*=*=*    
 
     void Init();
-    void AttachShader(const std::string& path, GLenum type);
+    void AttachShader(const std::string& path, GLenum type, bool embeddedString);
     void Link();
     void Use();
     void DeInitGL();

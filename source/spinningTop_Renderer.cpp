@@ -4,6 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
+#ifdef EMBEDDED_SHADERS
+	#include "shaders/all_shaders.hpp"
+#endif
+
 spinningTop_Renderer::spinningTop_Renderer(std::size_t initialTrajLength)
 {
 	SetUpFramebuffer();
@@ -261,30 +265,57 @@ void spinningTop_Renderer::SetUpScene()
 
 void spinningTop_Renderer::PrepareShaders()
 {
+#ifndef EMBEDDED_SHADERS
 	m_shader_cube.Init();
-	m_shader_cube.AttachShader("./shaders/cube.vert", GL_VERTEX_SHADER);
-	m_shader_cube.AttachShader("./shaders/cube.frag", GL_FRAGMENT_SHADER);
+	m_shader_cube.AttachShader("./shaders/cube.vert", GL_VERTEX_SHADER, false);
+	m_shader_cube.AttachShader("./shaders/cube.frag", GL_FRAGMENT_SHADER, false);
 	m_shader_cube.Link();
 
 	m_shader_cubeDiagonal.Init();
-	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.vert", GL_VERTEX_SHADER);
-	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.frag", GL_FRAGMENT_SHADER);
+	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.vert", GL_VERTEX_SHADER, false);
+	m_shader_cubeDiagonal.AttachShader("./shaders/diagonal.frag", GL_FRAGMENT_SHADER, false);
 	m_shader_cubeDiagonal.Link();
 
 	m_shader_traj.Init();
-	m_shader_traj.AttachShader("./shaders/trajectory.vert", GL_VERTEX_SHADER);
-	m_shader_traj.AttachShader("./shaders/trajectory.frag", GL_FRAGMENT_SHADER);
+	m_shader_traj.AttachShader("./shaders/trajectory.vert", GL_VERTEX_SHADER, false);
+	m_shader_traj.AttachShader("./shaders/trajectory.frag", GL_FRAGMENT_SHADER, false);
 	m_shader_traj.Link();
 
 	m_shader_gravityQuad.Init();
-	m_shader_gravityQuad.AttachShader("./shaders/quad.vert", GL_VERTEX_SHADER);
-	m_shader_gravityQuad.AttachShader("./shaders/quad.frag", GL_FRAGMENT_SHADER);
+	m_shader_gravityQuad.AttachShader("./shaders/quad.vert", GL_VERTEX_SHADER, false);
+	m_shader_gravityQuad.AttachShader("./shaders/quad.frag", GL_FRAGMENT_SHADER, false);
 	m_shader_gravityQuad.Link();
 
 	m_shader_gravityForce.Init();
-	m_shader_gravityForce.AttachShader("./shaders/force.vert", GL_VERTEX_SHADER);
-	m_shader_gravityForce.AttachShader("./shaders/force.frag", GL_FRAGMENT_SHADER);
+	m_shader_gravityForce.AttachShader("./shaders/force.vert", GL_VERTEX_SHADER, false);
+	m_shader_gravityForce.AttachShader("./shaders/force.frag", GL_FRAGMENT_SHADER, false);
 	m_shader_gravityForce.Link();
+#else 
+	m_shader_cube.Init();
+	m_shader_cube.AttachShader(shader_cube_vert, GL_VERTEX_SHADER, true);
+	m_shader_cube.AttachShader(shader_cube_frag, GL_FRAGMENT_SHADER, true);
+	m_shader_cube.Link();
+
+	m_shader_cubeDiagonal.Init();
+	m_shader_cubeDiagonal.AttachShader(shader_diagonal_vert, GL_VERTEX_SHADER, true);
+	m_shader_cubeDiagonal.AttachShader(shader_diagonal_frag, GL_FRAGMENT_SHADER, true);
+	m_shader_cubeDiagonal.Link();
+
+	m_shader_traj.Init();
+	m_shader_traj.AttachShader(shader_trajectory_vert, GL_VERTEX_SHADER, true);
+	m_shader_traj.AttachShader(shader_trajectory_frag, GL_FRAGMENT_SHADER, true);
+	m_shader_traj.Link();
+
+	m_shader_gravityQuad.Init();
+	m_shader_gravityQuad.AttachShader(shader_quad_vert, GL_VERTEX_SHADER, true);
+	m_shader_gravityQuad.AttachShader(shader_quad_frag, GL_FRAGMENT_SHADER, true);
+	m_shader_gravityQuad.Link();
+
+	m_shader_gravityForce.Init();
+	m_shader_gravityForce.AttachShader(shader_force_vert, GL_VERTEX_SHADER, true);
+	m_shader_gravityForce.AttachShader(shader_force_frag, GL_FRAGMENT_SHADER, true);
+	m_shader_gravityForce.Link();	
+#endif
 
 	// Matrices
 	m_matricesUBO.CreateUBO(2 * sizeof(glm::mat4));

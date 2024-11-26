@@ -36,7 +36,7 @@ function(shaders_to_embedded_hpp TARGET_NAME SHADER_FOLDER)
 	file(WRITE ${ALL_SHADERS_FILE_NAME} "#pragma once\n\n")
 
 	foreach(FILE IN LISTS SHADER_HPP_FILES_LIST)
-		file(APPEND ${ALL_SHADERS_FILE_NAME} "#include <${FILE}>\n")
+		file(APPEND ${ALL_SHADERS_FILE_NAME} "#include \"${FILE}\"\n")
 	endforeach()
 
 	add_custom_target(${SHADER_TARGET_NAME} DEPENDS ${COMPILED_SHADER_FILES})

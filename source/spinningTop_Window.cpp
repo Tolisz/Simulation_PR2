@@ -427,7 +427,7 @@ void spinningTop_Window::GUI_SEC_MiscellaneousInfo()
 	ImGui::SeparatorText("Miscellaneous Information");
 
 	float win_width = ImGui::GetWindowWidth();
-	
+
 	ImGui::BeginDisabled(!b_limitFPS);
 
 	int framerate = static_cast<int>(m_framerate);
@@ -448,6 +448,11 @@ void spinningTop_Window::GUI_SEC_MiscellaneousInfo()
 	
 	ImGui::TextColored(b_limitFPS ? ImGui::GetStyle().Colors[ImGuiCol_Text] : ImVec4(1.0f, 0.0f, 0.0f, 1.0f), 
 		"FPS: %6.2f", 1.0f / m_deltaTime);
+
+	ImGui::Spacing();
+	ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "Viewport navigation");
+	ImGui::Text("LMB - sceen rotation");
+	ImGui::Text("RMB - zoom in/out");
 }
 
 void spinningTop_Window::GUI_WindowRender()
@@ -478,7 +483,6 @@ void spinningTop_Window::GUI_ELEM_DrawCheckbox(std::string name, glm::vec4& colo
 	ImGui::SameLine();
 	ImGui::Checkbox(name.data(), &draw);
 }
-
 
 void spinningTop_Window::GUI_UpdateDockingLayout()
 {
