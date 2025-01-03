@@ -196,7 +196,9 @@ void trajectoryBuffer::ReallocateGPUMemory()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// link buffer 
-	unsigned int indices[] = {Capacity() - 1, 0};
+	unsigned int indices[2]; 
+	indices[0] = Capacity() - 1;
+	indices[1] = 0;
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementsBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

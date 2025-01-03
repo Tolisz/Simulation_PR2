@@ -45,4 +45,11 @@ if (MSVC)
 
 else()
 	target_compile_options(${PR2_EXECUTABLE_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+
+	# It is not that simple ...
+	if (NOT PR2_SHOW_DEBUG_CONSOLE)
+		message("-- RP2: PR2_SHOW_DEBUG_CONSOLE option is OFF")
+	else() 
+		message("-- RP2: PR2_SHOW_DEBUG_CONSOLE option is ON")
+	endif()
 endif()

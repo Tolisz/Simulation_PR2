@@ -4,7 +4,13 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
+#if __has_include(<format>)
 #include <format>
+#else 
+#include <sstream>
+#include <iomanip>
+#endif
+
 #include <iostream>
 
 /* static */ const char* spinningTop_Window::c_angleTypes[] = {
@@ -350,8 +356,14 @@ void spinningTop_Window::GUI_SEC_SimulationOptions()
 	else if (m_selectedAngVelAngleType == 1) 
 	{
 		float radPerPi = simulationParams->m_cubeAngularVelocity / glm::pi<float>();
-		std::string format = "%.2f  " + std::format("({0:.2f} * pi)", radPerPi);
 
+#ifdef __cpp_lib_format
+		std::string format = "%.2f  " + std::format("({0:.2f} * pi)", radPerPi);
+#else
+		std::ostringstream oss;
+		oss << std::fixed << std::setprecision(2) << " (" << radPerPi << " * pi)";
+		std::string format = "%.2f  " + oss.str();
+#endif
 		ImGui::DragFloat("##Angular velocity", &simulationParams->m_cubeAngularVelocity, 0.1f, 0.0f, FLT_MAX, format.data(), ImGuiSliderFlags_AlwaysClamp);
 	}
 	
