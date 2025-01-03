@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 
+#include <cstddef>
+
 class uniformBufferObject 
 {
 private:
